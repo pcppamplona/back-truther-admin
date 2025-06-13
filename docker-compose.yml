@@ -1,0 +1,10 @@
+services:
+  pg:
+    image: bitnami/postgresql:latest
+    container_name: node-ts-boilerplate
+    ports:
+      - 8432:5432   
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=password
+      - POSTGRESQL_DATABASE=boilerplate_db

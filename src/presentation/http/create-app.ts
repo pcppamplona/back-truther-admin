@@ -1,0 +1,76 @@
+import fastifyCors from '@fastify/cors'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUI from '@fastify/swagger-ui'
+import fastify from 'fastify'
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from 'fastify-type-provider-zod'
+
+import { env } from '@/infra/env'
+import jwtPlugin from '@/infra/plugins/jwt'
+import swaggerAuth from '@/infra/plugins/swagger-auth'
+import { errorHandler } from '@/presentation/http/middlewares/error-handler'
+
+import { LoggerInterceptor } from './interceptors/logger-interceptor'
+import { registerRoutes } from './routes'
+
+export async function createApp() {
+  const app = fastify({
+    trustProxy: true,
+  }).withTypeProvider<ZodTypeProvider>()
+
+  // Set compilers
+  app.setSerializerCompiler(serializerCompiler)
+  app.setValidatorCompiler(validatorCompiler)
+
+  // Global error handler
+  app.setErrorHandler(errorHandler)
+
+  // Plugins
+  await app.register(fastifyCors)
+  await app.register(jwtPlugin)
+  await app.register(swaggerAuth)
+
+  await app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'APP/SERVICE NAME',
+        description: 'APP/SERVICE DESCRIPTION',
+        version: '1.0.0',
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      servers: [],
+    },
+    transform: jsonSchemaTransform,
+  })
+
+  if (env.NODE_ENV === 'dev') {
+    await app.register(async function (instance) {
+      instance.addHook('onRequest', instance.basicAuth)
+
+      await instance.register(fastifySwaggerUI, {
+        routePrefix: '/docs',
+        staticCSP: true,
+      })
+    })
+  }
+
+  // Interceptors
+  LoggerInterceptor.register(app)
+
+  // Register routes
+  registerRoutes(app)
+
+  return app
+}
