@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/presentation/http/server.ts",
-    "start": "node build/presentation/http/server.cjs",
+    "dev": "tsx watch src/bootstrap/server.ts",
+    "start": "node build/bootstrap/server.cjs",
     "build": "tsup src --out-dir build",
     "lint": "eslint src --ext .ts --fix",
     "migrate": "tsx src/infra/db/pg/migrate.ts"

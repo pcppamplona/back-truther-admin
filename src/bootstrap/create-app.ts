@@ -14,8 +14,8 @@ import jwtPlugin from '@/infra/plugins/jwt'
 import swaggerAuth from '@/infra/plugins/swagger-auth'
 import { errorHandler } from '@/presentation/http/middlewares/error-handler'
 
-import { LoggerInterceptor } from './interceptors/logger-interceptor'
-import { registerRoutes } from './routes'
+import { LoggerInterceptor } from '../presentation/http/interceptors/logger-interceptor'
+import { registerRoutes } from '../presentation/http/routes'
 
 export async function createApp() {
   const app = fastify({

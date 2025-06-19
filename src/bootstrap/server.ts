@@ -1,7 +1,7 @@
 import { PostgresDatabase } from '@/infra/db/pg/connection'
 import { env } from '@/infra/env'
+import { loggerService } from '@/infra/logger/logger-service'
 
-import { loggerService } from '../../infra/logger/logger-service'
 import { createApp } from './create-app'
 
 async function main() {
