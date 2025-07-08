@@ -9,7 +9,8 @@
     "start": "node build/bootstrap/server.cjs",
     "build": "tsup src --out-dir build",
     "lint": "eslint src --ext .ts --fix",
-    "migrate": "tsx src/infra/db/pg/migrate.ts"
+    "migrate": "tsx src/infra/db/pg/migrate.ts",
+    "seed": "tsx src/infra/db/pg/seeds/seed.ts"
   },
   "keywords": [],
   "author": "",
