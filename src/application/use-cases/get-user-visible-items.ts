@@ -24,8 +24,8 @@ export class GetUserVisibleGroupIdsUseCase {
 
     for (const userGroup of userGroups) {
       allGroupIds.add(userGroup.groupId)
-
       const descendantIds = await this.groupsRepository.getAllDescendants(userGroup.groupId)
+      console.log("response getAllDescendants>>", descendantIds);
       descendantIds.forEach(id => allGroupIds.add(id))
     }
 
