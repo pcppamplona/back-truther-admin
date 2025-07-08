@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS user_groups (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    group_id INTEGER NOT NULL REFERENCES groups(id),
+    is_main BOOLEAN DEFAULT FALSE
+);

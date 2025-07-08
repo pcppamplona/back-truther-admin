@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS groups (
+    id SERIAL PRIMARY KEY,
+    group_name TEXT NOT NULL,
+    id_pai INTEGER REFERENCES groups(id) ON DELETE SET NULL
+);
