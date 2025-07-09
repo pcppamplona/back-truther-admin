@@ -19,12 +19,14 @@ async function seed() {
     {
       description: "Inserindo usuários",
       sql: `
-        INSERT INTO users (name, password_hash)
-        VALUES
-          ('Pedro Silva', crypt('senha123', gen_salt('bf'))),
-          ('Maria Oliveira', crypt('superSenha!', gen_salt('bf'))),
-          ('João Souza', crypt('outraSenha$', gen_salt('bf')))
-      `,
+          INSERT INTO users (
+           uuid, name, username, password_hash, active, force_reset_pwd, type_auth, created_at, updated_at
+            )
+            VALUES
+              (gen_random_uuid(),'Pedro Silva','pedro.silva',crypt('senha123', gen_salt('bf')),true,false,'local',NOW(),NOW()),
+              (gen_random_uuid(),'Maria Oliveira','maria.oliveira',crypt('superSenha!', gen_salt('bf')),true,false,'local',NOW(),NOW()),
+              (gen_random_uuid(),'João Souza','joao.souza',crypt('outraSenha$', gen_salt('bf')),true,false,'local', NOW(),NOW())
+              `,
     },
     {
       description: "Inserindo items",

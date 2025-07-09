@@ -23,7 +23,7 @@ export class AuthenticateUseCase {
 
     const [userId, password] = this.parseAuthCode(decryptedAuthCode)
 
-    const user = await this.usersRepository.findByName(userId)
+    const user = await this.usersRepository.findByUsername(userId)
 
     if (!user) throw new InvalidCredentialsError()
 

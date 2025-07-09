@@ -17,6 +17,6 @@ export async function authenticateController(
   })
 
   const token = request.server.generateJwt({ sub: user.id })
-
+  console.log(`[AUTH] Token gerado para user_id=${user.id}: ${token}`);
   return reply.status(200).send({ token })
 }

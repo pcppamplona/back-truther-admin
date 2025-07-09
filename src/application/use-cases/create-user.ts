@@ -1,32 +1,43 @@
-import { hash } from 'bcrypt'
-
 import type { CreateUser, User } from '@/domain/user/model/user'
 import type { UsersRepository } from '@/domain/user/repositories/user-repository'
 import { BadRequestError } from '@/errors/bad-request-error'
+import { hash } from 'bcrypt'
 
 interface Input extends Omit<CreateUser, 'passwordHash'> {
   password: string
 }
 
-interface Output extends Pick<User, 'id'> {}
+interface Output {
+  id: number
+}
 
 export class CreateUserUseCase {
   constructor(private usersRepository: UsersRepository) {}
 
-  async execute({ name, password }: Input): Promise<Output> {
-    const passwordHash = await hash(password, 6)
+  async execute({
+    uuid,
+    name,
+    username,
+    password,
+    active,
+    forceResetPwd,
+    typeAuth,
+  }: Input): Promise<Output> {
+    const passwordHash = await hash(password, 10)
 
-    const userWithSameName = await this.usersRepository.findByName(name)
+    const existing = await this.usersRepository.findByUsername(username)
+    if (existing) throw new BadRequestError('Username already in use.')
 
-    if (userWithSameName) {
-      throw new BadRequestError('User already exists.')
-    }
-
-    const user = await this.usersRepository.create({
+    const created = await this.usersRepository.create({
+      uuid,
       name,
+      username,
       passwordHash,
+      active,
+      forceResetPwd,
+      typeAuth,
     })
 
-    return { id: user.id }
+    return { id: created.id }
   }
 }
