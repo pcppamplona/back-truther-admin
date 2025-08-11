@@ -27,7 +27,7 @@ async function jwtPlugin(fastify: FastifyInstance) {
   fastify.decorate('generateJwt', (payload: Record<string, unknown>) => {
     return jwt.sign(payload, privateKey, {
       algorithm: 'RS256',
-      expiresIn: '10m',
+      expiresIn: '1h',
     })
   })
 }
