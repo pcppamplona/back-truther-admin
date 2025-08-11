@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
 export const authenticateInputSchema = z.object({
-  encryptedAuthCode: z.string(),
+  name: z.string().min(1, 'Name is required'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export type AuthenticateInputDTO = z.infer<typeof authenticateInputSchema>
