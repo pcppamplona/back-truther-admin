@@ -7,11 +7,11 @@ export async function authenticateController(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const { name, password } = authenticateInputSchema.parse(request.body)
+  const { username, password } = authenticateInputSchema.parse(request.body)
 
   const authenticateUseCase = makeAuthenticateUseCase()
 
-  const { user } = await authenticateUseCase.execute({ name, password })
+  const { user } = await authenticateUseCase.execute({ username, password })
 
   const token = request.server.generateJwt({ sub: user.id })
 

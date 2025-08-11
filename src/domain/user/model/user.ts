@@ -1,13 +1,26 @@
 interface User {
-  id: string
+  id: number
+  uuid: string
   name: string
-  passwordHash: string
-  createdAt: Date
+  username: string
+  password: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+  forceResetPwd: boolean
+  typeAuth: string
+  groupLevel: string
 }
 
 interface CreateUser {
   name: string
-  passwordHash: string
+  username: string
+  password: string
+  active?: boolean
+  forceResetPwd?: boolean
+  typeAuth: string
+  groupLevel: string
 }
 
 export { User, CreateUser }
