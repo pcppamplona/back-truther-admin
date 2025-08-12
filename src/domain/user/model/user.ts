@@ -23,4 +23,11 @@ interface CreateUser {
   groupLevel: string
 }
 
-export { User, CreateUser }
+interface DecisionKycStatus {
+  id: number
+  kyc_approved: boolean
+  banking_enable: boolean
+  comment_kyc?: string
+}
+
+export { User, CreateUser, DecisionKycStatus }

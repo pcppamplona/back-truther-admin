@@ -1,13 +1,13 @@
-import { PostgresDatabase } from "@/infra/db/pg/connection";
-import { env } from "@/infra/env";
+import { PostgresDatabase } from '@/infra/db/pg/connection'
+import { env } from '@/infra/env'
 
 async function seed() {
-  await PostgresDatabase.connect(env.DATABASE_URL);
-  const client = await PostgresDatabase.getClient();
+  await PostgresDatabase.connect(env.DATABASE_URL)
+  const client = await PostgresDatabase.getClient()
 
   const queries = [
     {
-      description: "Inserindo grupos",
+      description: 'Inserindo grupos',
       sql: `
         INSERT INTO groups (id, group_name, id_pai) VALUES
             (1, 'N2', 4),
@@ -17,7 +17,7 @@ async function seed() {
       `,
     },
     {
-      description: "Inserindo usuários",
+      description: 'Inserindo usuários',
       sql: `
         INSERT INTO users
           (uuid, name, username, password, active, created_at, updated_at, deleted_at, force_reset_pwd, type_auth, group_level)
@@ -29,7 +29,7 @@ async function seed() {
       `
     },
     {
-      description: "Inserindo items",
+      description: 'Inserindo items',
       sql: `
         INSERT INTO items (group_id, title, description) VALUES
           (1, 'Item 1', 'Description 1'),
@@ -45,7 +45,7 @@ async function seed() {
       `,
     },
     {
-      description: "Inserindo user-groups",
+      description: 'Inserindo user-groups',
       sql: `
        INSERT INTO user_groups (user_id, group_id, is_main) VALUES
         (1, 1, FALSE),
@@ -109,19 +109,19 @@ async function seed() {
           (17466, 'Ademilton Do Amparo Sousa', 'MOBILE_USER', FALSE, FALSE, 'NEW', 2, '2025-05-26T01:15:09.460Z', '2025-05-26T15:50:01.970Z', '"CP"', NULL, TRUE, 'NORISK', TRUE, FALSE, '', 0, 2, 'Kyc automatically approved.', 'CELCOIN', 1, '$2b$10$amX.YjytYaPWjxVHcXQxF.bKfZASwy4VQz1HBC635yYvLaXkxM/qS', '2804:2f4c:1000:544:29dc:171:c5f6:3ffa', '{}', FALSE, FALSE, '5b047ff1-aa04-4735-aead-cff32dc3544d', NULL, NULL, 0, FALSE, FALSE);
       `
     }
-  ];
+  ]
 
   for (const { sql, description } of queries) {
     try {
-      await client.query(sql);
-      console.log(`✅ ${description} realizado com sucesso`);
+      await client.query(sql)
+      console.log(`✅ ${description} realizado com sucesso`)
     } catch (error) {
-      console.error(`❌ Erro ao executar "${description}":`, error);
+      console.error(`❌ Erro ao executar "${description}":`, error)
     }
   }
 
-  client.release();
-  process.exit(0);
+  client.release()
+  process.exit(0)
 }
 
-seed();
+seed()
