@@ -14,4 +14,18 @@ export class PgClientsRepository implements ClientsRepository {
       client.release()
     }
   }
+
+  async findByUuid(uuid: string): Promise<Clients | null> {
+    const client = await PostgresDatabase.getClient()
+    try {
+      const result = await client.query(
+        `SELECT * FROM clients WHERE uuid = $1 LIMIT 1`,
+        [uuid]
+      )
+      if (result.rowCount === 0) return null
+      return result.rows[0]
+    } finally {
+      client.release()
+    }
+  }
 }
