@@ -1,6 +1,7 @@
-import type { CreateUser, User } from '../model/user'
+import type { User } from '../model/user'
 
 export interface UsersRepository {
   findByName(name: string): Promise<User | null>
-  create(data: CreateUser): Promise<{ id: string }>
+  findAll(): Promise<User[]>
+  findById(id: number): Promise<User | null>
 }
