@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { makeSetDecisionKycUseCase } from '@/application/factories/make-set-decision-kyc'
+import { makeSetDecisionKycUseCase } from '@/application/factories/user-truther/make-set-decision-kyc'
 import { setKycDecisionInputSchema } from '@/presentation/http/schemas/set-decision-kyc.schema'
 
 export async function SetDecisionKycController(
@@ -18,7 +18,6 @@ export async function SetDecisionKycController(
     internalComment,
     externalComment,
   })
-
 
   return reply.status(201).send({ id: result.id })
 }

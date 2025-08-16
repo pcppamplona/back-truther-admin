@@ -39,7 +39,7 @@ export class PostgresDatabase {
     connections: Record<string, string | undefined>,
   ): Promise<void> {
     const entries = Object.entries(connections).filter(
-      ([_name, cs]): cs is string => Boolean(cs),
+      (entry): entry is [string, string] => Boolean(entry[1]),
     )
     await Promise.all(entries.map(([name, cs]) => this.connect(cs, name)))
   }

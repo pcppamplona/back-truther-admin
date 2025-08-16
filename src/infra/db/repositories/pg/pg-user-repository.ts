@@ -1,11 +1,7 @@
-import type {
-  CreateUser,
-  DecisionKycStatus,
-  User,
-} from '@/domain/user/model/user'
+import type { CreateUser, User } from '@/domain/user/model/user'
 import type { UsersRepository } from '@/domain/user/repositories/user-repository'
 
-import { PostgresDatabase } from "../../pg/connection";
+import { PostgresDatabase } from '../../pg/connection'
 
 export class PgUserRepository implements UsersRepository {
   async findByName(username: string): Promise<User | null> {
@@ -53,28 +49,6 @@ export class PgUserRepository implements UsersRepository {
       );
 
       return { id: result.rows[0].id }
-    } finally {
-      client.release()
-    }
-  }
-
-  async updateKycStatus(decisionKycStatus: DecisionKycStatus): Promise<void> {
-    const client = await PostgresDatabase.getClient('truther')
-
-    try {
-      await client.query(
-        `UPDATE public.users
-         SET kyc_approved = $2,
-             banking_enable = $3,
-             comment_kyc = $4
-         WHERE id = $1`,
-        [
-          decisionKycStatus.id,
-          decisionKycStatus.kyc_approved,
-          decisionKycStatus.banking_enable,
-          decisionKycStatus.comment_kyc ?? null,
-        ],
-      )
     } finally {
       client.release()
     }

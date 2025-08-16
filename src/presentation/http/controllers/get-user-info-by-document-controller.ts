@@ -1,4 +1,5 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
+
 import { makeGetUserInfoByDocumentUseCase } from '@/application/factories/make-get-user-info-by-document'
 
 interface Params {
