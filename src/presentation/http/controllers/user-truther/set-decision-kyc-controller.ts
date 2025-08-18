@@ -18,6 +18,7 @@ export async function SetDecisionKycController(
     internalComment,
     externalComment,
   })
+  // TODO: Enviar email de notificação para o usuário - Falta implementação no sentinel
 
   return reply.status(201).send({ id: result.id })
 }
