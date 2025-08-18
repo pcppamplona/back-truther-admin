@@ -5,23 +5,23 @@ import type { UsersRepository } from '@/domain/user/repositories/user-repository
 import { InvalidCredentialsError } from '@/errors/invalid-credentials-error'
 
 interface Input {
-  name: string
+  username: string
   password: string
 }
 
 interface Output {
-  user: Omit<User, 'passwordHash'>
+  user: Omit<User, 'password'>
 }
 
 export class AuthenticateUseCase {
   constructor(private usersRepository: UsersRepository) {}
 
-  async execute({ name, password }: Input): Promise<Output> {
-    const user = await this.usersRepository.findByName(name)
+  async execute({ username, password }: Input): Promise<Output> {
+    const user = await this.usersRepository.findByName(username)
 
     if (!user) throw new InvalidCredentialsError()
 
-    const doesPasswordMatch = await compare(password, user.passwordHash)
+    const doesPasswordMatch = await compare(password, user.password)
     if (!doesPasswordMatch) throw new InvalidCredentialsError()
 
     return { user }

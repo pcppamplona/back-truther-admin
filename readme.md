@@ -30,6 +30,8 @@ Responsável por declarar o **modelo de negócio puro**: entidades, contratos e 
 
 ---
 
+
+
 ### `infra/`
 
 Contém a **implementação técnica** das dependências do sistema: banco de dados, log, serviços externos, etc.

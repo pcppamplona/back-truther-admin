@@ -1,13 +1,14 @@
-interface User {
-  id: string
+export interface User {
+  id: number
+  uuid: string
   name: string
-  passwordHash: string
-  createdAt: Date
+  username: string
+  password: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+  forceResetPwd: boolean
+  typeAuth: string
+  groupLevel: string
 }
-
-interface CreateUser {
-  name: string
-  passwordHash: string
-}
-
-export { User, CreateUser }
