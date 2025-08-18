@@ -1,7 +1,7 @@
 import type { User } from "@/domain/user/model/user";
 import type { UsersRepository } from "@/domain/user/repositories/user-repository";
 
-import { PostgresDatabase } from "../../pg/connection";
+import { PostgresDatabase } from '../../pg/connection'
 
 export class PgUserRepository implements UsersRepository {
   async findByName(username: string): Promise<User | null> {
@@ -21,11 +21,11 @@ export class PgUserRepository implements UsersRepository {
         [username]
       );
 
-      if (result.rowCount === 0) return null;
+      if (result.rowCount === 0) return null
 
-      return result.rows[0];
+      return result.rows[0]
     } finally {
-      client.release();
+      client.release()
     }
   }
 
@@ -79,11 +79,11 @@ export class PgUserRepository implements UsersRepository {
           LIMIT 1
         `,
         [id]
-      );
+      )
 
-      return result.rows[0] || null;
+      return result.rows[0] || null
     } finally {
-      client.release();
+      client.release()
     }
   }
 }

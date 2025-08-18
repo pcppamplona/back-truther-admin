@@ -5,41 +5,84 @@ import { env } from '@/infra/env'
 import { logger } from '@/infra/logger'
 
 export class PostgresDatabase {
-  private static pool: Pool
-  private static isConnected = false
+  private static pools = new Map<string, Pool>()
 
-  static async connect(connectionString: string): Promise<void> {
-    if (this.isConnected) return
+  static async connect(
+    connectionString: string,
+    name = 'default',
+  ): Promise<void> {
+    if (this.pools.has(name)) return
 
     try {
-      this.pool = new Pool({
+      const pool = new Pool({
         connectionString,
         ssl:
           env.NODE_ENV === 'production'
             ? { rejectUnauthorized: false }
             : undefined,
       })
-      await this.pool.query('SELECT 1') // teste de conexão
 
-      this.isConnected = true
-      logger.info('PostgreSQL connected successfully')
+      await pool.query('SELECT 1') // teste de conexão
+
+      this.pools.set(name, pool)
+
+      // Evita logar a connection string (pode conter credenciais)
+      const host = safeHostFromConnectionString(connectionString)
+      logger.info(`PostgreSQL "${name}" conectado${host ? ` em ${host}` : ''}`)
     } catch (err) {
-      logger.error('Error to connect with PostgreSQL:', err)
+      logger.error(`Erro ao conectar no PostgreSQL "${name}":`, err)
       process.exit(1)
     }
   }
 
-  static getPool(): Pool {
-    if (!this.isConnected) {
-      throw new BadRequestError(
-        'PostgresDatabase not connected. Call connect() first.',
-      )
-    }
-
-    return this.pool
+  static async connectMany(
+    connections: Record<string, string | undefined>,
+  ): Promise<void> {
+    const entries = Object.entries(connections).filter(
+      (entry): entry is [string, string] => Boolean(entry[1]),
+    )
+    await Promise.all(entries.map(([name, cs]) => this.connect(cs, name)))
   }
 
-  static async getClient(): Promise<PoolClient> {
-    return this.getPool().connect()
+  static getPool(name = 'default'): Pool {
+    const pool = this.pools.get(name)
+    if (!pool) {
+      throw new BadRequestError(
+        `PostgresDatabase("${name}") não conectado. Chame connect() primeiro.`,
+      )
+    }
+    return pool
+  }
+
+  static async getClient(name = 'default'): Promise<PoolClient> {
+    return this.getPool(name).connect()
+  }
+
+  static async close(name = 'default'): Promise<void> {
+    const pool = this.pools.get(name)
+    if (pool) {
+      await pool.end()
+      this.pools.delete(name)
+      logger.info(`PostgreSQL "${name}" desconectado`)
+    }
+  }
+
+  static async closeAll(): Promise<void> {
+    await Promise.all(
+      Array.from(this.pools.entries()).map(async ([name, pool]) => {
+        await pool.end()
+        logger.info(`PostgreSQL "${name}" desconectado`)
+      }),
+    )
+    this.pools.clear()
+  }
+}
+
+function safeHostFromConnectionString(cs: string): string | null {
+  try {
+    const u = new URL(cs)
+    return u.host || null
+  } catch {
+    return null
   }
 }

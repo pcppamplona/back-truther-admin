@@ -10,7 +10,10 @@ async function main() {
   await app.ready()
 
   // Test db connection
-  await PostgresDatabase.connect(env.DATABASE_URL)
+  await PostgresDatabase.connectMany({
+    default: env.DATABASE_URL,
+    truther: env.DATABASE_URL_TRUTHER,
+  })
 
   app
     .listen({ port: env.PORT, host: '0.0.0.0' })

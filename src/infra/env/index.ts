@@ -7,6 +7,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3233),
   LOG_DIR: z.string().default('logs'),
   DATABASE_URL: z.string(),
+  DATABASE_URL_TRUTHER: z.string(),
   PK_SECRET: z.string(),
   SWAGGER_USER: z.string(),
   SWAGGER_PASSWORD: z.string(),
