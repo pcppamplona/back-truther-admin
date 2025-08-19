@@ -1,7 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
-import { listClientsController } from '../controllers/list-clients-controller'
-import { verifyJwt } from '../middlewares/verify-jwt'
+import { listClientsController } from '../../controllers/clients/list-clients-controller'
+import { verifyJwt } from '../../middlewares/verify-jwt'
+import { listClientsPaginatedController } from '../../controllers/clients/list-clients-paginated-controller'
+import { listClientsPaginatedQuerySchema } from '../../schemas/clients.schema'
 
 export async function clientsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -25,5 +27,17 @@ export async function clientsRoutes(app: FastifyInstance) {
       },
     },
     listClientsController
+  ),
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/clients/paginated",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Clients"],
+        summary: "List clients with pagination (requires authentication)",
+        querystring: listClientsPaginatedQuerySchema,
+      },
+    },
+    listClientsPaginatedController
   )
 }

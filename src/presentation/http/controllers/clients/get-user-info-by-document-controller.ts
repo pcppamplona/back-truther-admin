@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { makeGetUserInfoByDocumentUseCase } from '@/application/factories/make-get-user-info-by-document'
+import { makeGetUserInfoByDocumentUseCase } from '@/application/factories/clients/make-get-user-info-by-document'
 
 interface Params {
   document: string

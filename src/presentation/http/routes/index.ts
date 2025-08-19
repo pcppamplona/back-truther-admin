@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
 import { authenticateUser } from './authenticate'
-import { clientsRoutes } from './clients'
+import { clientsRoutes } from './clients/clients'
 import { healthCheck } from './health-check'
 import { userItemsRoutes } from './user-items'
 import { userTrutherRoutes } from './user-truther/user-truther'

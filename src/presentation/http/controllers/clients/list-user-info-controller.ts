@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { makeListUserInfoUseCase } from '@/application/factories/make-list-user-info'
+import { makeListUserInfoUseCase } from '@/application/factories/clients/make-list-user-info'
 
 export async function listUserInfoController(req: FastifyRequest, reply: FastifyReply) {
   const useCase = makeListUserInfoUseCase()

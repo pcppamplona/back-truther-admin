@@ -1,6 +1,7 @@
 import { PostgresDatabase } from '../../pg/connection'
 import type { Clients } from '@/domain/clients/model/clients'
 import type { ClientsRepository } from '@/domain/clients/repositories/clients-repository'
+import { PaginatedResult, PaginationParams } from '@/shared/pagination'
 
 export class PgClientsRepository implements ClientsRepository {
   async findAll(): Promise<Clients[]> {
@@ -24,6 +25,31 @@ export class PgClientsRepository implements ClientsRepository {
       )
       if (result.rowCount === 0) return null
       return result.rows[0]
+      } finally {
+      client.release()
+    }
+  }
+
+  async findPaginated(params: PaginationParams): Promise<PaginatedResult<Clients>> {
+    const { page, limit } = params
+    const offset = (page - 1) * limit
+
+    const client = await PostgresDatabase.getClient()
+    try {
+      const [rowsResult, countResult] = await Promise.all([
+        client.query(
+          `SELECT * FROM clients ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+          [limit, offset]
+        ),
+        client.query(`SELECT COUNT(*)::int AS total FROM clients`)
+      ])
+
+    return {
+        data: rowsResult.rows,
+        total: countResult.rows[0].total,
+        page,
+        limit
+      }
     } finally {
       client.release()
     }

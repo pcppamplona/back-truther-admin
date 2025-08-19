@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { makeGetUserItemsUseCase } from '@/application/factories/make-get-user-items';
+import { makeGetUserItemsUseCase } from '@/application/factories/user/make-get-user-items';
 
 interface GetUserItemsParams {
     id: string;
