@@ -1,5 +1,5 @@
 
-import { GetUserItemsUseCase } from '../use-cases/get-user-items';
+import { GetUserItemsUseCase } from '../../use-cases/users/get-user-items';
 import { PgGroupsRepository } from '@/infra/db/repositories/pg/pg-groups-repository';
 import { PgItemsRepository } from '@/infra/db/repositories/pg/pg-item-repository';
 import { PgUserGroupsRepository } from '@/infra/db/repositories/pg/pg-user-group-repository';

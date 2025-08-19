@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { makeGetClientByUuidUseCase } from '@/application/factories/make-get-client-by-uuid'
+import { makeGetClientByUuidUseCase } from '@/application/factories/clients/make-get-client-by-uuid'
 
 interface Params {
   uuid: string

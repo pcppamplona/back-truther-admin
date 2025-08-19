@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 
-import { makeGetUserInfoByUserIdUseCase } from '@/application/factories/make-get-user-info-by-userid'
+import { makeGetUserInfoByUserIdUseCase } from '@/application/factories/clients/make-get-user-info-by-userid'
 
 interface Params {
   user_id: string

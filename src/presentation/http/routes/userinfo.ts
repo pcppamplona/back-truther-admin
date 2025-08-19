@@ -2,9 +2,9 @@ import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
-import { getUserInfoByDocumentController } from '../controllers/get-user-info-by-document-controller'
-import { getUserInfoByUserIdController } from '../controllers/get-user-info-by-userid-controller'
-import { listUserInfoController } from '../controllers/list-user-info-controller'
+import { getUserInfoByDocumentController } from '../controllers/clients/get-user-info-by-document-controller'
+import { getUserInfoByUserIdController } from '../controllers/clients/get-user-info-by-userid-controller'
+import { listUserInfoController } from '../controllers/clients/list-user-info-controller'
 import { verifyJwt } from '../middlewares/verify-jwt'
 
 export async function userinfoRoutes(app: FastifyInstance) {

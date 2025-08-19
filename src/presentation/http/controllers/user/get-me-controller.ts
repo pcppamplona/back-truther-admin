@@ -1,4 +1,4 @@
-import { makeGetMeUseCase } from '@/application/factories/make-get-me'
+import { makeGetMeUseCase } from '@/application/factories/user/make-get-me'
 import { FastifyRequest, FastifyReply } from 'fastify'
 
 export async function getMeController(

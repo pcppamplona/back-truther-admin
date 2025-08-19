@@ -1,4 +1,4 @@
-import { makeGetAllUsersUseCase } from '@/application/factories/make-get-all-users'
+import { makeGetAllUsersUseCase } from '@/application/factories/user/make-get-all-users'
 import { FastifyRequest, FastifyReply } from 'fastify'
 
 export async function getUsersController(
