@@ -3,4 +3,5 @@ import { Clients } from '../model/clients'
 export interface ClientsRepository {
   findAll(): Promise<Clients[]>
   findByUuid(uuid: string): Promise<Clients | null>
+  findById(id: number): Promise<Clients | null> 
 }

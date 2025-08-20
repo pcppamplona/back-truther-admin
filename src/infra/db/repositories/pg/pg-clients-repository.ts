@@ -1,57 +1,74 @@
-import { PostgresDatabase } from '../../pg/connection'
-import type { Clients } from '@/domain/clients/model/clients'
-import type { ClientsRepository } from '@/domain/clients/repositories/clients-repository'
-import { PaginatedResult, PaginationParams } from '@/shared/pagination'
+import { PostgresDatabase } from "../../pg/connection";
+import type { Clients } from "@/domain/clients/model/clients";
+import type { ClientsRepository } from "@/domain/clients/repositories/clients-repository";
+import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 
 export class PgClientsRepository implements ClientsRepository {
   async findAll(): Promise<Clients[]> {
-    const client = await PostgresDatabase.getClient()
+    const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM clients ORDER BY created_at DESC`
-      )
-      return result.rows
+      );
+      return result.rows;
     } finally {
-      client.release()
+      client.release();
     }
   }
 
   async findByUuid(uuid: string): Promise<Clients | null> {
-    const client = await PostgresDatabase.getClient()
+    const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM clients WHERE uuid = $1 LIMIT 1`,
         [uuid]
-      )
-      if (result.rowCount === 0) return null
-      return result.rows[0]
-      } finally {
-      client.release()
+      );
+      if (result.rowCount === 0) return null;
+      return result.rows[0];
+    } finally {
+      client.release();
     }
   }
 
-  async findPaginated(params: PaginationParams): Promise<PaginatedResult<Clients>> {
-    const { page, limit } = params
-    const offset = (page - 1) * limit
+  async findById(id: number): Promise<Clients | null> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `SELECT * FROM clients WHERE id = $1 LIMIT 1`,
+        [id]
+      );
+      if (result.rowCount === 0) return null;
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
 
-    const client = await PostgresDatabase.getClient()
+
+  async findPaginated(
+    params: PaginationParams
+  ): Promise<PaginatedResult<Clients>> {
+    const { page, limit } = params;
+    const offset = (page - 1) * limit;
+
+    const client = await PostgresDatabase.getClient();
     try {
       const [rowsResult, countResult] = await Promise.all([
         client.query(
           `SELECT * FROM clients ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
           [limit, offset]
         ),
-        client.query(`SELECT COUNT(*)::int AS total FROM clients`)
-      ])
+        client.query(`SELECT COUNT(*)::int AS total FROM clients`),
+      ]);
 
-    return {
+      return {
         data: rowsResult.rows,
         total: countResult.rows[0].total,
         page,
-        limit
-      }
+        limit,
+      };
     } finally {
-      client.release()
+      client.release();
     }
   }
 }
