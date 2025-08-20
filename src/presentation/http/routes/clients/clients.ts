@@ -4,6 +4,7 @@ import { listClientsController } from '../../controllers/clients/list-clients-co
 import { verifyJwt } from '../../middlewares/verify-jwt'
 import { listClientsPaginatedController } from '../../controllers/clients/list-clients-paginated-controller'
 import { listClientsPaginatedQuerySchema } from '../../schemas/clients.schema'
+import { getClientByUuidController } from '../../controllers/clients/get-client-by-uuid-controller'
 
 export async function clientsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -26,7 +27,7 @@ export async function clientsRoutes(app: FastifyInstance) {
         summary: 'List client by uuid (requires authentication)',
       },
     },
-    listClientsController
+    getClientByUuidController
   ),
   app.withTypeProvider<ZodTypeProvider>().get(
     "/clients/paginated",
