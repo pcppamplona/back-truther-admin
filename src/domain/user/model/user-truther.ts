@@ -6,4 +6,57 @@ interface DecisionKycStatus {
   stage_kyc?: number
 }
 
-export { DecisionKycStatus }
+interface UserTrutherWithWallet {
+  // User fields
+  id: number
+  name: string
+  role: string
+  is_verified: boolean
+  can_transact: boolean
+  status: string
+  fee_level_id: number
+  created_at: Date
+  updated_at: Date
+  flags: any
+  expo_id: string
+  kyc_approved: boolean
+  kyc_risk: string
+  banking_enable: boolean
+  disinterest: boolean
+  register_txid: string
+  called_attempts_guenno: number
+  stage_kyc: number
+  comment_kyc: string
+  providerKyc: string
+  attemptsKyc: number
+  password: string
+  ipCreate: string
+  error: string
+  restrict: boolean
+  override_instant_pay: boolean
+  uuid: string
+  lastLogin: Date
+  lastIpLogin: string
+  retryKyc: boolean
+  regenerateKyc: boolean
+  master_instant_pay: boolean
+  
+  // Wallet fields
+  wallet_id: number
+  address: string
+  device_id: string
+  user_id: number
+  salt: string
+  wallet_created_at: Date
+  wallet_updated_at: Date
+  type: string
+  locked_balance: number
+  balance: number
+  protocol: string
+  custodian: string
+  new_wallet: boolean
+  usdtBalance: number
+  usdtLockedBalance: number
+}
+
+export { DecisionKycStatus, UserTrutherWithWallet }
