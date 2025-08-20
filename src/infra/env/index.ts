@@ -8,6 +8,7 @@ const envSchema = z.object({
   LOG_DIR: z.string().default('logs'),
   DATABASE_URL: z.string(),
   DATABASE_URL_TRUTHER: z.string(),
+  DATABASE_URL_BANKS: z.string(),
   PK_SECRET: z.string(),
   SWAGGER_USER: z.string(),
   SWAGGER_PASSWORD: z.string(),

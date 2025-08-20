@@ -13,6 +13,7 @@ async function main() {
   await PostgresDatabase.connectMany({
     default: env.DATABASE_URL,
     truther: env.DATABASE_URL_TRUTHER,
+    banks: env.DATABASE_URL_BANKS,
   })
 
   app
