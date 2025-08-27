@@ -6,8 +6,25 @@ interface DecisionKycStatus {
   stage_kyc?: number
 }
 
+interface Wallet {
+  id: number
+  address: string
+  device_id: string
+  user_id: number
+  salt: string
+  created_at: Date
+  updated_at: Date
+  type: string
+  locked_balance: number
+  balance: number
+  protocol: string
+  custodian: string
+  new_wallet: boolean
+  usdtBalance: number
+  usdtLockedBalance: number
+}
+
 interface UserTrutherWithWallet {
-  // User fields
   id: number
   name: string
   role: string
@@ -40,23 +57,8 @@ interface UserTrutherWithWallet {
   retryKyc: boolean
   regenerateKyc: boolean
   master_instant_pay: boolean
-  
-  // Wallet fields
-  wallet_id: number
-  address: string
-  device_id: string
-  user_id: number
-  salt: string
-  wallet_created_at: Date
-  wallet_updated_at: Date
-  type: string
-  locked_balance: number
-  balance: number
-  protocol: string
-  custodian: string
-  new_wallet: boolean
-  usdtBalance: number
-  usdtLockedBalance: number
+
+  wallets: Wallet[]
 }
 
-export { DecisionKycStatus, UserTrutherWithWallet }
+export { DecisionKycStatus, UserTrutherWithWallet, Wallet }
