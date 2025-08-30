@@ -1,19 +1,19 @@
-import { makeGetUserDetailedInfoUseCase } from '@/application/factories/user-truther/make-get-user-detailed-info'
+import { makeGetUserTrutherByIdUseCase } from '@/application/factories/user-truther/make-get-user-detailed-info'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
-const getUserDetailedInfoParamsSchema = z.object({
+const getUserTrutherByIdParamsSchema = z.object({
   userId: z.coerce.number().positive()
 })
 
-export async function getUserDetailedInfoController(
+export async function getUserTrutherByIdController(
   req: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { userId } = getUserDetailedInfoParamsSchema.parse(req.params)
+  const { userId } = getUserTrutherByIdParamsSchema.parse(req.params)
 
-  const getUserDetailedInfoUseCase = makeGetUserDetailedInfoUseCase()
-  const result = await getUserDetailedInfoUseCase.execute({ userId })
+  const getUserTrutherByIdUseCase = makeGetUserTrutherByIdUseCase()
+  const result = await getUserTrutherByIdUseCase.execute({ userId })
 
   if (!result) {
     return reply.status(404).send({ message: 'User not found' })

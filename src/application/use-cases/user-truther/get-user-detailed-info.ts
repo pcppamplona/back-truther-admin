@@ -1,14 +1,14 @@
 import { UserDetailedInfo } from '@/domain/user-truther/model/user-detailed-info'
 import { UsersTrutherRepository } from '@/domain/user-truther/repositories/user-truther-repository'
 
-export interface GetUserDetailedInfoUseCaseRequest {
+export interface GetUserTrutherByIdUseCaseRequest {
   userId: number
 }
 
-export class GetUserDetailedInfoUseCase {
+export class GetUserTrutherByIdUseCase {
   constructor(private usersTrutherRepository: UsersTrutherRepository) {}
 
-  async execute({ userId }: GetUserDetailedInfoUseCaseRequest): Promise<UserDetailedInfo | null> {
-    return this.usersTrutherRepository.findDetailedUserInfoById(userId)
+  async execute({ userId }: GetUserTrutherByIdUseCaseRequest): Promise<UserDetailedInfo | null> {
+    return this.usersTrutherRepository.findUserTrutherById(userId)
   }
 }

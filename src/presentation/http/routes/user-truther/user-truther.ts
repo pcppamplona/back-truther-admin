@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { SetDecisionKycController } from '../../controllers/user-truther/set-decision-kyc-controller'
-import { getPaginatedUsersWithWalletsController } from '../../controllers/user-truther/get-paginated-users-with-wallets-controller'
-import { getUserDetailedInfoController } from '../../controllers/user-truther/get-user-detailed-info-controller'
+import { getUsersTrutherWithWalletsController } from '../../controllers/user-truther/get-paginated-users-with-wallets-controller'
+import { getUserTrutherByIdController } from '../../controllers/user-truther/get-user-detailed-info-controller'
 import { verifyJwt } from '../../middlewares/verify-jwt'
 import { setKycDecisionInputSchema } from '../../schemas/set-decision-kyc.schema'
 
@@ -26,7 +26,7 @@ export async function userTrutherRoutes(app: FastifyInstance) {
     {
       preHandler: [verifyJwt()]
     },
-    getPaginatedUsersWithWalletsController
+    getUsersTrutherWithWalletsController
   )
 
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -38,6 +38,6 @@ export async function userTrutherRoutes(app: FastifyInstance) {
         summary: 'Get detailed information for a specific user (requires authentication)'
       }
     },
-    getUserDetailedInfoController
+    getUserTrutherByIdController
   )
 }

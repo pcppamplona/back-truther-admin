@@ -1,9 +1,9 @@
-import { GetUserDetailedInfoUseCase } from '@/application/use-cases/user-truther/get-user-detailed-info'
+import { GetUserTrutherByIdUseCase } from '@/application/use-cases/user-truther/get-user-detailed-info'
 import { PgUserTrutherRepository } from '@/infra/db/repositories/pg/pg-user-truther-repository'
 
-export function makeGetUserDetailedInfoUseCase() {
+export function makeGetUserTrutherByIdUseCase() {
   const pgUserTrutherRepository = new PgUserTrutherRepository()
-  const getUserDetailedInfoUseCase = new GetUserDetailedInfoUseCase(pgUserTrutherRepository)
+  const getUserTrutherByIdUseCase = new GetUserTrutherByIdUseCase(pgUserTrutherRepository)
   
-  return getUserDetailedInfoUseCase
+  return getUserTrutherByIdUseCase
 }

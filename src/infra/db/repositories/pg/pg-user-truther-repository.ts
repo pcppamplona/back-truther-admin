@@ -16,7 +16,7 @@ import { KycUserMapper } from '../../mappers/kyc-user-mapper'
 import { CustomerMapper } from '../../mappers/customer-mapper'
 
 export class PgUserTrutherRepository implements UsersTrutherRepository {
-  async findDetailedUserInfoById(userId: number): Promise<UserDetailedInfo | null> {
+  async findUserTrutherById(userId: number): Promise<UserDetailedInfo | null> {
     const trutherClient = await PostgresDatabase.getClient('truther')
     let banksClient = null
     
@@ -219,7 +219,7 @@ export class PgUserTrutherRepository implements UsersTrutherRepository {
     }
   }
 
-  async findPaginatedWithWallets({ page, limit, address, custodian }: UserTrutherPaginationParams): Promise<PaginatedResult<UserTrutherWithWallet>> {
+  async findUsersTrutherWithWallets({ page, limit, address, custodian }: UserTrutherPaginationParams): Promise<PaginatedResult<UserTrutherWithWallet>> {
     const client = await PostgresDatabase.getClient('truther')
     try {
       const offset = (page - 1) * limit

@@ -9,6 +9,6 @@ export interface UserTrutherPaginationParams extends PaginationParams {
 
 export interface UsersTrutherRepository {
   updateKycStatus(decisionKycStatus: DecisionKycStatus): Promise<void>
-  findPaginatedWithWallets(params: UserTrutherPaginationParams): Promise<PaginatedResult<UserTrutherWithWallet>>
-  findDetailedUserInfoById(userId: number): Promise<UserDetailedInfo | null>
+  findUsersTrutherWithWallets(params: UserTrutherPaginationParams): Promise<PaginatedResult<UserTrutherWithWallet>>
+  findUserTrutherById(userId: number): Promise<UserDetailedInfo | null>
 }
