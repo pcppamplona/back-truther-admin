@@ -1,46 +1,47 @@
-import { PostgresDatabase } from "../../pg/connection";
-import type { Clients } from "@/domain/clients/model/clients";
-import type { ClientsRepository } from "@/domain/clients/repositories/clients-repository";
-import { PaginatedResult, PaginationParams } from "@/shared/pagination";
+import { PostgresDatabase } from '../../pg/connection'
+import type { Clients } from '@/domain/clients/model/clients'
+import type { ClientsRepository } from '@/domain/clients/repositories/clients-repository'
+import { PaginatedResult, PaginationParams } from '@/shared/pagination'
+import { ClientsMapper } from '../../mappers/clients-mapper'
 
 export class PgClientsRepository implements ClientsRepository {
   async findAll(): Promise<Clients[]> {
-    const client = await PostgresDatabase.getClient();
+    const client = await PostgresDatabase.getClient()
     try {
       const result = await client.query(
         `SELECT * FROM clients ORDER BY created_at DESC`
-      );
-      return result.rows;
+      )
+      return ClientsMapper.toClientsList(result.rows)
     } finally {
-      client.release();
+      client.release()
     }
   }
 
   async findByUuid(uuid: string): Promise<Clients | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await PostgresDatabase.getClient()
     try {
       const result = await client.query(
         `SELECT * FROM clients WHERE uuid = $1 LIMIT 1`,
         [uuid]
-      );
-      if (result.rowCount === 0) return null;
-      return result.rows[0];
-    } finally {
-      client.release();
+      )
+      if (result.rowCount === 0) return null
+      return ClientsMapper.toClients(result.rows[0])
+      } finally {
+      client.release()
     }
   }
 
   async findById(id: number): Promise<Clients | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await PostgresDatabase.getClient()
     try {
       const result = await client.query(
         `SELECT * FROM clients WHERE id = $1 LIMIT 1`,
         [id]
-      );
-      if (result.rowCount === 0) return null;
-      return result.rows[0];
+      )
+      if (result.rowCount === 0) return null
+      return ClientsMapper.toClients(result.rows[0])
     } finally {
-      client.release();
+      client.release()
     }
   }
 
@@ -92,7 +93,7 @@ export class PgClientsRepository implements ClientsRepository {
     `;
 
       const countQuery = `
-      SELECT COUNT(*) AS total FROM clients
+      SELECT COUNT(*)::int AS total FROM clients
       ${whereClause}
     `;
 
@@ -100,13 +101,13 @@ export class PgClientsRepository implements ClientsRepository {
       const countResult = await client.query(countQuery, values);
 
       return {
-        data: result.rows,
+        data: ClientsMapper.toClientsList(result.rows),
         total: Number(countResult.rows[0].total),
         page,
-        limit,
+        limit
       };
     } finally {
-      client.release();
+      client.release()
     }
   }
 }

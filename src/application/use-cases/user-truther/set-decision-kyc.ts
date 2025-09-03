@@ -1,5 +1,5 @@
 import type { User } from '@/domain/user/model/user'
-import { UsersTrutherRepository } from '@/domain/user/repositories/user-truther/user-truther-repository'
+import { UsersTrutherRepository } from '@/domain/user-truther/repositories/user-truther-repository'
 
 interface Input {
   id: number
