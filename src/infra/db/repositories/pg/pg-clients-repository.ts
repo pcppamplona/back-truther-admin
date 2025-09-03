@@ -31,26 +31,81 @@ export class PgClientsRepository implements ClientsRepository {
     }
   }
 
-  async findPaginated(params: PaginationParams): Promise<PaginatedResult<Clients>> {
-    const { page, limit } = params
-    const offset = (page - 1) * limit
-
+  async findById(id: number): Promise<Clients | null> {
     const client = await PostgresDatabase.getClient()
     try {
-      const [rowsResult, countResult] = await Promise.all([
-        client.query(
-          `SELECT * FROM clients ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
-          [limit, offset]
-        ),
-        client.query(`SELECT COUNT(*)::int AS total FROM clients`)
-      ])
+      const result = await client.query(
+        `SELECT * FROM clients WHERE id = $1 LIMIT 1`,
+        [id]
+      )
+      if (result.rowCount === 0) return null
+      return ClientsMapper.toClients(result.rows[0])
+    } finally {
+      client.release()
+    }
+  }
 
-    return {
-        data: ClientsMapper.toClientsList(rowsResult.rows),
-        total: countResult.rows[0].total,
+  async findPaginated(
+    params: PaginationParams
+  ): Promise<PaginatedResult<Clients>> {
+    const {
+      page,
+      limit,
+      search,
+      sortBy = "created_at",
+      sortOrder = "DESC",
+    } = params;
+    const client = await PostgresDatabase.getClient();
+
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = [
+      "id",
+      "name",
+      "uuid",
+      "role",
+      "created_at",
+      "kyc_approved",
+    ];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+
+    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where: string[] = [];
+    const values: any[] = [];
+
+    if (search) {
+      values.push(`%${search}%`);
+      where.push(
+        `(name ILIKE $${values.length} OR role ILIKE $${values.length})`
+      );
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    try {
+      const query = `
+      SELECT * FROM clients
+      ${whereClause}
+      ORDER BY ${safeSortBy} ${safeSortOrder}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+    `;
+
+      const countQuery = `
+      SELECT COUNT(*)::int AS total FROM clients
+      ${whereClause}
+    `;
+
+      const result = await client.query(query, [...values, limit, offset]);
+      const countResult = await client.query(countQuery, values);
+
+      return {
+        data: ClientsMapper.toClientsList(result.rows),
+        total: Number(countResult.rows[0].total),
         page,
         limit
-      }
+      };
     } finally {
       client.release()
     }
