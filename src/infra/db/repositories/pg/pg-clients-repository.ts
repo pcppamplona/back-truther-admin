@@ -2,6 +2,7 @@ import { PostgresDatabase } from '../../pg/connection'
 import type { Clients } from '@/domain/clients/model/clients'
 import type { ClientsRepository } from '@/domain/clients/repositories/clients-repository'
 import { PaginatedResult, PaginationParams } from '@/shared/pagination'
+import { ClientsMapper } from '../../mappers/clients-mapper'
 
 export class PgClientsRepository implements ClientsRepository {
   async findAll(): Promise<Clients[]> {
@@ -10,7 +11,7 @@ export class PgClientsRepository implements ClientsRepository {
       const result = await client.query(
         `SELECT * FROM clients ORDER BY created_at DESC`
       )
-      return result.rows
+      return ClientsMapper.toClientsList(result.rows)
     } finally {
       client.release()
     }
@@ -24,7 +25,7 @@ export class PgClientsRepository implements ClientsRepository {
         [uuid]
       )
       if (result.rowCount === 0) return null
-      return result.rows[0]
+      return ClientsMapper.toClients(result.rows[0])
       } finally {
       client.release()
     }
@@ -45,7 +46,7 @@ export class PgClientsRepository implements ClientsRepository {
       ])
 
     return {
-        data: rowsResult.rows,
+        data: ClientsMapper.toClientsList(rowsResult.rows),
         total: countResult.rows[0].total,
         page,
         limit

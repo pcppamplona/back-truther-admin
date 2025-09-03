@@ -2,6 +2,7 @@ import type { User } from "@/domain/user/model/user";
 import type { PaginationParams, PaginatedResult, UsersRepository } from "@/domain/user/repositories/user-repository";
 
 import { PostgresDatabase } from '../../pg/connection'
+import { AdminUserMapper } from '../../mappers/admin-user-mapper'
 
 export class PgUserRepository implements UsersRepository {
   async findByName(username: string): Promise<User | null> {
@@ -23,7 +24,7 @@ export class PgUserRepository implements UsersRepository {
 
       if (result.rowCount === 0) return null
 
-      return result.rows[0]
+      return AdminUserMapper.toUser(result.rows[0])
     } finally {
       client.release()
     }
@@ -48,7 +49,7 @@ export class PgUserRepository implements UsersRepository {
             group_level AS "groupLevel"
           FROM users`
       );
-      return result.rows;
+      return AdminUserMapper.toUserList(result.rows);
     } finally {
       client.release();
     }
@@ -89,7 +90,7 @@ export class PgUserRepository implements UsersRepository {
       const totalPages = Math.ceil(total / limit);
       
       return {
-        data: result.rows,
+        data: AdminUserMapper.toUserList(result.rows),
         pagination: {
           total,
           page,
@@ -129,7 +130,8 @@ export class PgUserRepository implements UsersRepository {
         [id]
       )
 
-      return result.rows[0] || null
+      if (result.rowCount === 0) return null
+      return AdminUserMapper.toUser(result.rows[0])
     } finally {
       client.release()
     }
