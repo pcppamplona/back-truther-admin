@@ -1,8 +1,10 @@
 import { FastifyInstance } from 'fastify'
 
 import { authenticateUser } from './authenticate'
+import { auditLogsRoutes } from './audit-logs/audit-logs'
 import { clientsRoutes } from './clients/clients'
 import { healthCheck } from './health-check'
+import { systemsRoutes } from './systems/systems'
 import { userItemsRoutes } from './user-items'
 import { userTrutherRoutes } from './user-truther/user-truther'
 import { userinfoRoutes } from './userinfo'
@@ -19,6 +21,8 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(usersRoutes)
   await app.register(clientsRoutes)
   await app.register(userinfoRoutes)
+  await app.register(auditLogsRoutes)
+  await app.register(systemsRoutes)
 
   await app.register(userTrutherRoutes)
 }
