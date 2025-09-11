@@ -1,8 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { makeGetSystemUseCase } from '@/application/factories/systems/make-get-system'
 
-export async function getSystemController(req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-  const { id } = req.params
+export async function getSystemController(request: FastifyRequest, reply: FastifyReply) {
+  const { id } = request.params as { id: number };
+
   
   const useCase = makeGetSystemUseCase()
   const system = await useCase.execute(id)
