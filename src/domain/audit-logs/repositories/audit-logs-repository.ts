@@ -1,0 +1,20 @@
+import { AuditLog, ActionType, SystemType } from '../model/audit-log'
+import { PaginatedResult, PaginationParams } from '@/shared/pagination'
+
+export interface CreateAuditLogData {
+  method: string
+  action: ActionType
+  message: string
+  description?: string
+  sender_type: SystemType
+  sender_id: string
+  target_type: SystemType
+  target_id: string
+}
+
+export interface AuditLogsRepository {
+  create(data: CreateAuditLogData): Promise<AuditLog>
+  findAll(): Promise<AuditLog[]>
+  findById(id: number): Promise<AuditLog | null>
+  findPaginated(params: PaginationParams): Promise<PaginatedResult<AuditLog>>
+}

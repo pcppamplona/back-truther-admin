@@ -12,7 +12,18 @@ export async function authenticateController(
   const authenticateUseCase = makeAuthenticateUseCase();
 
   const { user } = await authenticateUseCase.execute({ username, password });
-  
+
+  void request.audit({
+    action: 'security',
+    message: 'User login',
+    description: `User ${user.username} (${user.name}) logged in`,
+    senderType: 'USER',
+    senderId: String(user.id),
+    targetType: 'ADMIN',
+    targetId: ''
+  })
+
+
   const token = request.server.generateJwt({
     sub: user.id,
     role: user.groupLevel,

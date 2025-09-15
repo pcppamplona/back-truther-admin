@@ -12,8 +12,11 @@ export class PgUserRepository implements UsersRepository {
       const result = await client.query(
         `SELECT 
            id,
+           uuid,
+           name,
            username,
            password,
+           type_auth AS "typeAuth",
            group_level AS "groupLevel",
            created_at AS "createdAt"
          FROM users

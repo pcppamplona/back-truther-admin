@@ -12,6 +12,7 @@ import {
 import { env } from '@/infra/env'
 import jwtPlugin from '@/infra/plugins/jwt'
 import swaggerAuth from '@/infra/plugins/swagger-auth'
+import auditPlugin from '@/infra/plugins/audit'
 import { errorHandler } from '@/presentation/http/middlewares/error-handler'
 
 import { LoggerInterceptor } from '../presentation/http/interceptors/logger-interceptor'
@@ -33,6 +34,7 @@ export async function createApp() {
   await app.register(fastifyCors)
   await app.register(jwtPlugin)
   await app.register(swaggerAuth)
+  await app.register(auditPlugin)
 
   await app.register(fastifySwagger, {
     openapi: {
