@@ -9,6 +9,7 @@ import { userTrutherRoutes } from './user-truther/user-truther'
 import { userinfoRoutes } from './userinfo'
 import { usersRoutes } from "./users/users"
 import { meRoute } from "./users/me"
+import { ticketsRoutes } from './tickets/tickets'
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthCheck)
@@ -23,4 +24,6 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(systemsRoutes)
 
   await app.register(userTrutherRoutes)
+
+  await app.register(ticketsRoutes)
 }
