@@ -3,6 +3,9 @@ import type { User } from '../model/user'
 export interface PaginationParams {
   page: number
   limit: number
+  search?: string
+  sortBy?: string
+  sortOrder?: string
 }
 
 export interface PaginatedResult<T> {
@@ -18,6 +21,6 @@ export interface PaginatedResult<T> {
 export interface UsersRepository {
   findByName(name: string): Promise<User | null>
   findAll(): Promise<User[]>
-  findAllPaginated(params: PaginationParams): Promise<PaginatedResult<User>>
+  findPaginated(params: PaginationParams): Promise<PaginatedResult<User>>
   findById(id: number): Promise<User | null>
 }
