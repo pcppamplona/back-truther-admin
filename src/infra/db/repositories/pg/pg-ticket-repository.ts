@@ -50,7 +50,7 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async updateById(id: number, data: Partial<Ticket>): Promise<Ticket> {
+  async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
     const client = await PostgresDatabase.getClient();
     try {
       const fields = Object.keys(data);
@@ -73,7 +73,7 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async createComment(data: TicketComment): Promise<TicketComment> {
+  async createTicketComment(data: TicketComment): Promise<TicketComment> {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
@@ -88,7 +88,7 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findCommentById(ticket_id: number): Promise<TicketComment[]> {
+  async findTicketCommentsById(ticket_id: number): Promise<TicketComment[]> {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
