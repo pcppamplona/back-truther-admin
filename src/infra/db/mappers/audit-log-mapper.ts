@@ -15,8 +15,11 @@ export class AuditLogMapper {
       created_at: row.created_at,
       sender_type: row.sender_type as SystemType,
       sender_id: row.sender_id,
+      sender_name: row.sender_name,
       target_type: row.target_type as SystemType,
-      target_id: row.target_id
+      target_id: row.target_id,
+      target_name: row.target_name,
+      target_external_id: row.target_external_id
     }
   }
 

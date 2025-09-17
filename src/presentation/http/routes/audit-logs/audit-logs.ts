@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { createAuditLogController } from "../../controllers/audit-logs/create-audit-log-controller";
-import { listAuditLogsController } from "../../controllers/audit-logs/list-audit-logs-controller";
+import { getAuditLogByIdController } from "../../controllers/audit-logs/get-audit-log-by-id-controller";
 import { listAuditLogsPaginatedController } from "../../controllers/audit-logs/list-audit-logs-paginated-controller";
 import { verifyJwt } from "../../middlewares/verify-jwt";
 
@@ -11,30 +11,30 @@ export async function auditLogsRoutes(app: FastifyInstance) {
     {
       preHandler: [verifyJwt()],
       schema: {
-        tags: ["Audit Logs"],
-        summary: "List all audit logs (requires authentication)",
-      },
-    },
-    listAuditLogsController
-  ),
-  app.withTypeProvider<ZodTypeProvider>().get(
-    "/audit-logs/paginated",
-    {
-      preHandler: [verifyJwt()],
-      schema: {
-        tags: ["Audit Logs"],
-        summary: "List audit logs with pagination and filters (requires authentication)",
+        tags: ["Logs de Auditoria"],
+        summary: "Listar logs de auditoria com paginação e filtros (requer autenticação)",
       },
     },
     listAuditLogsPaginatedController
+  ),
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/audit-logs/:id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Logs de Auditoria"],
+        summary: "Obter log de auditoria por ID (requer autenticação)",
+      },
+    },
+    getAuditLogByIdController
   ),
   app.withTypeProvider<ZodTypeProvider>().post(
     "/audit-logs",
     {
       preHandler: [verifyJwt()],
       schema: {
-        tags: ["Audit Logs"],
-        summary: "Create a new audit log (requires authentication)",
+        tags: ["Logs de Auditoria"],
+        summary: "Criar um novo log de auditoria (requer autenticação)",
       },
     },
     createAuditLogController

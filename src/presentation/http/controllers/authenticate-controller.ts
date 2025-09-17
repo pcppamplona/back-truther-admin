@@ -20,7 +20,7 @@ export async function authenticateController(
     senderType: 'USER',
     senderId: String(user.id),
     targetType: 'ADMIN',
-    targetId: ''
+    targetId: '1'// assuming '1' is the system admin ID
   })
 
 
