@@ -7,14 +7,15 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
-        `INSERT INTO tickets (created_by, client, assigned_to, reason, status, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING *`,
+        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
         [
           data.created_by,
-          data.client,
-          data.assigned_to,
-          data.reason,
+          data.client_id,
+          data.assigned_group,
+          data.assigned_user,
+          data.reason_id,
           data.status,
           data.created_at,
         ]
@@ -37,18 +38,65 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findById(id: number): Promise<Ticket | null> {
-    const client = await PostgresDatabase.getClient();
-    try {
-      const result = await client.query(
-        `SELECT * FROM tickets WHERE id = $1 LIMIT 1`,
-        [id]
-      );
-      return result.rows[0] ?? null;
-    } finally {
-      client.release();
-    }
+  // async findById(id: number): Promise<Ticket | null> {
+  //   const client = await PostgresDatabase.getClient();
+  //   try {
+  //     const result = await client.query(
+  //       `SELECT * FROM tickets WHERE id = $1 LIMIT 1`,
+  //       [id]
+  //     );
+  //     return result.rows[0] ?? null;
+  //   } finally {
+  //     client.release();
+  //   }
+  // }
+async findById(id: number): Promise<Ticket | null> {
+  const client = await PostgresDatabase.getClient();
+  try {
+    const result = await client.query(
+      `
+      SELECT 
+        t.id,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'group', u.group_level
+        ) AS created_by,
+        json_build_object(
+          'id', c.id,
+          'name', c.name,
+          'document', ui.document,
+          'phone', ui.phone
+        ) AS client,
+        t.assigned_group,
+        json_build_object(
+          'id', au.id,
+          'name', au.name,
+          'group', au.group_level
+        ) AS assigned_user,
+        tr.id AS reason_id,
+        t.status,
+        t.created_at
+      FROM tickets t
+      JOIN users u ON t.created_by = u.id
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN userinfo ui ON ui.user_id = c.id 
+      LEFT JOIN users au ON t.assigned_user = au.id
+      JOIN ticket_reasons tr ON t.reason_id = tr.id
+      WHERE t.id = $1
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    return result.rows[0] ?? null;
+  } finally {
+    client.release();
   }
+}
+
+
+
 
   async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
     const client = await PostgresDatabase.getClient();
