@@ -11,20 +11,22 @@ import {
 } from "../../schemas/updat-ticket.schema";
 import { getTicketCommentController } from "../../controllers/tickets/get-ticket-comment-controller";
 import { createTicketCommentController } from "../../controllers/tickets/create-ticket-comment-controller";
+import { getTicketReasonsByCategoryController } from "../../controllers/tickets/get-ticket-reasons-by-category-controller";
+import { getTicketReasonsByIdController } from "../../controllers/tickets/get-ticket-reasons-by-id-controller";
 
 export async function ticketsRoutes(app: FastifyInstance) {
-    app.withTypeProvider<ZodTypeProvider>().get(
-      "/tickets",
-      {
-        preHandler: [verifyJwt()],
-        schema: {
-          tags: ["Ticket"],
-          summary:
-            "Get all tickets for user role permissions (requires authentication)",
-        },
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/tickets",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket"],
+        summary:
+          "Get all tickets for user role permissions (requires authentication)",
       },
-      getTicketsController
-    ),
+    },
+    getTicketsController
+  ),
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/:id",
       {
@@ -61,18 +63,18 @@ export async function ticketsRoutes(app: FastifyInstance) {
       updateTicketController
     );
 
-    //rotas da criação de comentário
-     app.withTypeProvider<ZodTypeProvider>().post(
-      "/tickets/comments",
-      {
-        preHandler: [verifyJwt()],
-        schema: {
-          tags: ["Ticket comment"],
-          summary: "create ticket comment (requires authentication)",
-        },
+  //rotas da criação de comentário
+  app.withTypeProvider<ZodTypeProvider>().post(
+    "/tickets/comments",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket comment"],
+        summary: "create ticket comment (requires authentication)",
       },
-      createTicketCommentController
-    ),
+    },
+    createTicketCommentController
+  ),
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/comments:ticket_id",
       {
@@ -84,4 +86,29 @@ export async function ticketsRoutes(app: FastifyInstance) {
       },
       getTicketCommentController
     );
+
+  //rota para pegar os reasons
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/tickets/reasons/category/:category_id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket reason"],
+        summary: "get all reasons by category (requires authentication)",
+      },
+    },
+    getTicketReasonsByCategoryController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/tickets/reasons/:id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket reason"],
+        summary: "get all reasons by id (requires authentication)",
+      },
+    },
+    getTicketReasonsByIdController
+  );
 }

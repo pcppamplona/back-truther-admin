@@ -1,4 +1,4 @@
-import { Ticket, TicketComment } from "../model/tickets";
+import { Reason, Ticket, TicketComment } from "../model/tickets";
 
 export interface TicketsRepository {
     //relation for ticket
@@ -10,4 +10,7 @@ export interface TicketsRepository {
     //relationb for ticket comment
     createTicketComment(data: TicketComment): Promise<TicketComment>
     findTicketCommentsById(ticket_id: number): Promise<TicketComment[]>
+
+    findTicketReasonByCategoryId(category_id: number): Promise<Reason[]>
+    findTicketReasonById(id: number): Promise<Reason | null>
 }

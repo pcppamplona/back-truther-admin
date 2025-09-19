@@ -1,4 +1,4 @@
-import { Ticket, TicketComment } from "@/domain/tickets/model/tickets";
+import { Reason, Ticket, TicketComment } from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import { PostgresDatabase } from "../../pg/connection";
 
@@ -50,11 +50,11 @@ export class PgTicketRepository implements TicketsRepository {
   //     client.release();
   //   }
   // }
-async findById(id: number): Promise<Ticket | null> {
-  const client = await PostgresDatabase.getClient();
-  try {
-    const result = await client.query(
-      `
+  async findById(id: number): Promise<Ticket | null> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `
       SELECT 
         t.id,
         json_build_object(
@@ -86,17 +86,14 @@ async findById(id: number): Promise<Ticket | null> {
       WHERE t.id = $1
       LIMIT 1
       `,
-      [id]
-    );
+        [id]
+      );
 
-    return result.rows[0] ?? null;
-  } finally {
-    client.release();
+      return result.rows[0] ?? null;
+    } finally {
+      client.release();
+    }
   }
-}
-
-
-
 
   async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
     const client = await PostgresDatabase.getClient();
@@ -144,6 +141,57 @@ async findById(id: number): Promise<Ticket | null> {
         [ticket_id]
       );
       return result.rows as TicketComment[];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findTicketReasonByCategoryId(category_id: number): Promise<Reason[]> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `
+        SELECT 
+          id,
+          category_id,
+          type,
+          reason,
+          expired_at,
+          description,
+          type_recipient,
+          recipient
+        FROM ticket_reasons
+        WHERE category_id = $1
+        `,
+        [category_id]
+      );
+      return result.rows as Reason[];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findTicketReasonById(id: number): Promise<Reason | null> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `
+        SELECT 
+          id,
+          category_id,
+          type,
+          reason,
+          expired_at,
+          description,
+          type_recipient,
+          recipient
+        FROM ticket_reasons
+        WHERE id = $1
+        LIMIT 1
+        `,
+        [id]
+      );
+      return result.rows[0] ?? null;
     } finally {
       client.release();
     }
