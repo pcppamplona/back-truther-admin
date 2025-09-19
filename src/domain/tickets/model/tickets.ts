@@ -66,3 +66,10 @@ export interface ReplyAction {
     body?: string;
   };
 }
+
+export type FinalizationReply = {
+  id: number;
+  reasonId: number;
+  reply: string;
+  comment: Boolean
+};

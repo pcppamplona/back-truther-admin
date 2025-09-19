@@ -13,6 +13,8 @@ import { getTicketCommentController } from "../../controllers/tickets/get-ticket
 import { createTicketCommentController } from "../../controllers/tickets/create-ticket-comment-controller";
 import { getTicketReasonsByCategoryController } from "../../controllers/tickets/get-ticket-reasons-by-category-controller";
 import { getTicketReasonsByIdController } from "../../controllers/tickets/get-ticket-reasons-by-id-controller";
+import { getTicketReasonsReplyController } from "../../controllers/tickets/get-ticket-reasons-reply-controller";
+import { getTicketReasonsReplyActionsController } from "../../controllers/tickets/get-ticket-reasons-reply-actions-controller";
 
 export async function ticketsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -87,7 +89,7 @@ export async function ticketsRoutes(app: FastifyInstance) {
       getTicketCommentController
     );
 
-  //rota para pegar os reasons
+  //rotas para pegar os reasons
   app.withTypeProvider<ZodTypeProvider>().get(
     "/tickets/reasons/category/:category_id",
     {
@@ -110,5 +112,32 @@ export async function ticketsRoutes(app: FastifyInstance) {
       },
     },
     getTicketReasonsByIdController
+  );
+
+  //rotas para o reply reasons
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/tickets/reasons/reply/:reason_id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket reply"],
+        summary: "Get all reply reasons by reason_id",
+        
+      },
+    },
+    getTicketReasonsReplyController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/tickets/reasons/reply/actions/:reply_id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket reply"],
+        summary: "Get all reply actions by reply_id",
+        
+      },
+    },
+    getTicketReasonsReplyActionsController
   );
 }

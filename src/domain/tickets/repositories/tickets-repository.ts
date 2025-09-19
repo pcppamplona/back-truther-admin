@@ -1,4 +1,4 @@
-import { Reason, Ticket, TicketComment } from "../model/tickets";
+import { FinalizationReply, Reason, ReplyAction, Ticket, TicketComment } from "../model/tickets";
 
 export interface TicketsRepository {
     //relation for ticket
@@ -13,4 +13,7 @@ export interface TicketsRepository {
 
     findTicketReasonByCategoryId(category_id: number): Promise<Reason[]>
     findTicketReasonById(id: number): Promise<Reason | null>
+
+    findReplyReasonsByReasonId(reason_id: number): Promise<FinalizationReply[]>
+    findReplyReasonsActionsByReplyId(reply_id: number): Promise<ReplyAction[]>
 }

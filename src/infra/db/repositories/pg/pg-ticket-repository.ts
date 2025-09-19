@@ -1,4 +1,4 @@
-import { Reason, Ticket, TicketComment } from "@/domain/tickets/model/tickets";
+import { FinalizationReply, Reason, ReplyAction, Ticket, TicketComment } from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import { PostgresDatabase } from "../../pg/connection";
 
@@ -192,6 +192,36 @@ export class PgTicketRepository implements TicketsRepository {
         [id]
       );
       return result.rows[0] ?? null;
+    } finally {
+      client.release();
+    }
+  }
+
+   async findReplyReasonsByReasonId(reason_id: number): Promise<FinalizationReply[]> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `SELECT id, reason_id AS "reason_id", reply, comment
+         FROM reply_reasons
+         WHERE reason_id = $1`,
+        [reason_id]
+      );
+      return result.rows as FinalizationReply[];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findReplyReasonsActionsByReplyId(replyId: number): Promise<ReplyAction[]> {
+    const client = await PostgresDatabase.getClient();
+    try {
+      const result = await client.query(
+        `SELECT id, reply_id AS "reply_id", type, data
+         FROM reply_actions
+         WHERE reply_id = $1`,
+        [replyId]
+      );
+      return result.rows as ReplyAction[];
     } finally {
       client.release();
     }
