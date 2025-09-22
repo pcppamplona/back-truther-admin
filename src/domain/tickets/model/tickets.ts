@@ -73,3 +73,15 @@ export type FinalizationReply = {
   reply: string;
   comment: Boolean
 };
+
+export interface FinalizeTicketInput {
+  ticketId: number;
+  replyId: number;
+  commentText?: string;
+  forceAssign?: boolean;
+  user: {
+    id: string;
+    name: string;
+    group: string;
+  };
+}

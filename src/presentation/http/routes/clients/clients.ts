@@ -3,10 +3,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { listClientsController } from "../../controllers/clients/list-clients-controller";
 import { verifyJwt } from "../../middlewares/verify-jwt";
 import { listClientsPaginatedController } from "../../controllers/clients/list-clients-paginated-controller";
-import {
-  getClientByIdParamsSchema,
-  listClientsPaginatedQuerySchema,
-} from "../../schemas/clients.schema";
+import { PaginatedQuerySchema } from "../../schemas/paginated.schema";
 import { getClientByUuidController } from "../../controllers/clients/get-client-by-uuid-controller";
 import { getClientByIdController } from "../../controllers/clients/get-client-by-id-controller";
 
@@ -40,7 +37,6 @@ export async function clientsRoutes(app: FastifyInstance) {
         schema: {
           tags: ["Clients"],
           summary: "Get client by ID (requires authentication)",
-          params: getClientByIdParamsSchema,
         },
       },
       getClientByIdController
@@ -53,7 +49,7 @@ export async function clientsRoutes(app: FastifyInstance) {
           tags: ["Clients"],
           summary:
             "List clients with pagination and filters (requires authentication)",
-          querystring: listClientsPaginatedQuerySchema,
+          querystring: PaginatedQuerySchema,
         },
       },
       listClientsPaginatedController

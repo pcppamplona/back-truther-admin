@@ -15,6 +15,13 @@ import { getTicketReasonsByCategoryController } from "../../controllers/tickets/
 import { getTicketReasonsByIdController } from "../../controllers/tickets/get-ticket-reasons-by-id-controller";
 import { getTicketReasonsReplyController } from "../../controllers/tickets/get-ticket-reasons-reply-controller";
 import { getTicketReasonsReplyActionsController } from "../../controllers/tickets/get-ticket-reasons-reply-actions-controller";
+import {
+  finalizeTicketBodySchema,
+  finalizeTicketParamsSchema,
+} from "../../schemas/finalize-ticket.schema";
+import { finalizeTicketController } from "../../controllers/tickets/finalize-ticket-controller";
+import { GetTicketsPaginatedController } from "../../controllers/tickets/get-tickets-paginated-controller";
+import { PaginatedQuerySchema } from "../../schemas/paginated.schema";
 
 export async function ticketsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -29,6 +36,19 @@ export async function ticketsRoutes(app: FastifyInstance) {
     },
     getTicketsController
   ),
+    app.withTypeProvider<ZodTypeProvider>().get(
+      "/tickets/paginated",
+      {
+        preHandler: [verifyJwt()],
+        schema: {
+          tags: ["Ticket"],
+          summary:
+            "List tickets with pagination and filters (requires authentication)",
+          querystring: PaginatedQuerySchema,
+        },
+      },
+      GetTicketsPaginatedController
+    ),
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/:id",
       {
@@ -122,7 +142,6 @@ export async function ticketsRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Ticket reply"],
         summary: "Get all reply reasons by reason_id",
-        
       },
     },
     getTicketReasonsReplyController
@@ -135,9 +154,23 @@ export async function ticketsRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Ticket reply"],
         summary: "Get all reply actions by reply_id",
-        
       },
     },
     getTicketReasonsReplyActionsController
+  );
+
+  //rota de finalização do ticket
+  app.withTypeProvider<ZodTypeProvider>().patch(
+    "/tickets/:id/finalize",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Ticket"],
+        summary: "Finaliza ticket, executa actions, cria comentários e audita",
+        params: finalizeTicketParamsSchema,
+        body: finalizeTicketBodySchema,
+      },
+    },
+    finalizeTicketController
   );
 }

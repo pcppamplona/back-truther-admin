@@ -1,4 +1,3 @@
-import { makeTicketReasonsReplyUseCase } from "@/application/factories/tickets/make-get-ticket-reasons-reply";
 import { makeTicketReasonsReplyActionsUseCase } from "@/application/factories/tickets/make-get-ticket-reasons-reply-action";
 import { FastifyReply, FastifyRequest } from "fastify";
 

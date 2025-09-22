@@ -1,6 +1,14 @@
-import { FinalizationReply, Reason, ReplyAction, Ticket, TicketComment } from "@/domain/tickets/model/tickets";
+import {
+  FinalizationReply,
+  FinalizeTicketInput,
+  Reason,
+  ReplyAction,
+  Ticket,
+  TicketComment,
+} from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import { PostgresDatabase } from "../../pg/connection";
+import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 
 export class PgTicketRepository implements TicketsRepository {
   async createTicket(data: Ticket): Promise<Ticket> {
@@ -38,18 +46,65 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  // async findById(id: number): Promise<Ticket | null> {
-  //   const client = await PostgresDatabase.getClient();
-  //   try {
-  //     const result = await client.query(
-  //       `SELECT * FROM tickets WHERE id = $1 LIMIT 1`,
-  //       [id]
-  //     );
-  //     return result.rows[0] ?? null;
-  //   } finally {
-  //     client.release();
-  //   }
-  // }
+  async findPaginated(
+    params: PaginationParams
+  ): Promise<PaginatedResult<Ticket>> {
+    const {
+      page,
+      limit,
+      search,
+      sortBy = "created_at",
+      sortOrder = "DESC",
+    } = params;
+
+    const client = await PostgresDatabase.getClient();
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = ["id", "title", "status", "created_at", "updated_at"];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+
+    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where: string[] = [];
+    const values: any[] = [];
+
+    if (search) {
+      values.push(`%${search}%`);
+      where.push(
+        `(title ILIKE $${values.length} OR description ILIKE $${values.length})`
+      );
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    try {
+      const query = `
+      SELECT * FROM tickets
+      ${whereClause}
+      ORDER BY ${safeSortBy} ${safeSortOrder}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+    `;
+
+      const countQuery = `
+      SELECT COUNT(*)::int AS total FROM tickets
+      ${whereClause}
+    `;
+
+      const result = await client.query(query, [...values, limit, offset]);
+      const countResult = await client.query(countQuery, values);
+
+      return {
+        data: result.rows as Ticket[],
+        total: Number(countResult.rows[0].total),
+        page,
+        limit,
+      };
+    } finally {
+      client.release();
+    }
+  }
+
   async findById(id: number): Promise<Ticket | null> {
     const client = await PostgresDatabase.getClient();
     try {
@@ -197,7 +252,9 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-   async findReplyReasonsByReasonId(reason_id: number): Promise<FinalizationReply[]> {
+  async findReplyReasonsByReasonId(
+    reason_id: number
+  ): Promise<FinalizationReply[]> {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
@@ -212,7 +269,9 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findReplyReasonsActionsByReplyId(replyId: number): Promise<ReplyAction[]> {
+  async findReplyReasonsActionsByReplyId(
+    replyId: number
+  ): Promise<ReplyAction[]> {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
@@ -222,6 +281,115 @@ export class PgTicketRepository implements TicketsRepository {
         [replyId]
       );
       return result.rows as ReplyAction[];
+    } finally {
+      client.release();
+    }
+  }
+
+  async finalizeTicket(
+    data: FinalizeTicketInput & { req?: any }
+  ): Promise<Ticket> {
+    const client = await PostgresDatabase.getClient();
+
+    try {
+      await client.query("BEGIN");
+
+      // 1️⃣ Buscar ticket com lock
+      const ticketResult = await client.query(
+        `SELECT * FROM tickets WHERE id = $1 FOR UPDATE`,
+        [data.ticketId]
+      );
+      const ticket = ticketResult.rows[0];
+      if (!ticket) throw new Error("Ticket não encontrado");
+
+      // 2️⃣ Criar comentário se existir
+      if (data.commentText) {
+        await client.query(
+          `INSERT INTO ticket_comments (ticket_id, author, message, date)
+         VALUES ($1, $2, $3, NOW())`,
+          [data.ticketId, data.user.name, data.commentText]
+        );
+
+        await data.req?.audit?.({
+          method: "POST",
+          action: "alter",
+          message: "Comentário adicionado",
+          description: `Comentário adicionado ao ticket ${data.ticketId}`,
+          sender_type: "USER",
+          sender_id: String(data.user.id),
+          target_type: "GUENO",
+          target_id: String(data.ticketId),
+        });
+      }
+
+      // 3️⃣ Buscar reply actions
+      const replyActions = await client.query(
+        `SELECT * FROM reply_actions WHERE reply_id = $1`,
+        [data.replyId]
+      );
+      for (const action of replyActions.rows) {
+        if (action.type === "new_event") {
+          const reasonResult = await client.query(
+            `SELECT * FROM ticket_reasons WHERE id = $1`,
+            [action.data.reasonId]
+          );
+          const reason = reasonResult.rows[0];
+          if (!reason) throw new Error("Reason não encontrado");
+
+          await client.query(
+            `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, created_at)
+           VALUES ($1, $2, $3, $4, $5, 'PENDENTE', NOW())`,
+            [
+              JSON.stringify(data.user),
+              ticket.client_id,
+              action.data.groupId ?? data.user.group,
+              data.user.id,
+              reason.id,
+            ]
+          );
+
+          await data.req?.audit?.({
+            method: "POST",
+            action: "alter",
+            message: "Novo evento criado",
+            description: `Criado novo evento vinculado à finalização de ${data.ticketId}`,
+            sender_type: "USER",
+            sender_id: String(data.user.id),
+            target_type: "GUENO",
+            target_id: String(data.ticketId),
+          });
+        }
+
+        if (action.type === "send_email") {
+          console.log(`Email simulado enviado para: ${action.data.email}`);
+        }
+      }
+
+      // 4️⃣ Finalizar ticket
+      const assignedTo =
+        ticket.assigned_user ?? (data.forceAssign ? data.user.id : null);
+      const updateResult = await client.query(
+        `UPDATE tickets SET status = 'FINALIZADO', assigned_user = $1 WHERE id = $2 RETURNING *`,
+        [assignedTo, data.ticketId]
+      );
+      const updatedTicket = updateResult.rows[0];
+
+      await data.req?.audit?.({
+        method: "PATCH",
+        action: "alter",
+        message: "Ticket finalizado",
+        description: `Ticket ${data.ticketId} finalizado por ${data.user.name}`,
+        sender_type: "USER",
+        sender_id: String(data.user.id),
+        target_type: "GUENO",
+        target_id: String(data.ticketId),
+      });
+
+      await client.query("COMMIT");
+      return updatedTicket;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
     } finally {
       client.release();
     }
