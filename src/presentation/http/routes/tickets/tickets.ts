@@ -98,7 +98,7 @@ export async function ticketsRoutes(app: FastifyInstance) {
     createTicketCommentController
   ),
     app.withTypeProvider<ZodTypeProvider>().get(
-      "/tickets/comments:ticket_id",
+      "/tickets/comments/:ticket_id",
       {
         preHandler: [verifyJwt()],
         schema: {

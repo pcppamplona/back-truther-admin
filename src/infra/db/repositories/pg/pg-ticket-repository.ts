@@ -60,9 +60,9 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await PostgresDatabase.getClient();
     const offset = (page - 1) * limit;
 
-    const allowedSortBy = ["id", "title", "status", "created_at", "updated_at"];
+    // Defina os campos que podem ser usados no ORDER BY
+    const allowedSortBy = ["id", "status", "created_at"];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
-
     const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
     const where: string[] = [];
@@ -70,24 +70,72 @@ export class PgTicketRepository implements TicketsRepository {
 
     if (search) {
       values.push(`%${search}%`);
-      where.push(
-        `(title ILIKE $${values.length} OR description ILIKE $${values.length})`
-      );
+      where.push(`
+      (
+        CAST(t.id AS TEXT) ILIKE $${values.length}
+        OR t.status ILIKE $${values.length}
+        OR tr.reason ILIKE $${values.length}
+        OR tr.type ILIKE $${values.length}
+        OR tr.description ILIKE $${values.length}
+      )
+    `);
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
     try {
       const query = `
-      SELECT * FROM tickets
+      SELECT 
+        t.id,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'group', u.group_level
+        ) AS created_by,
+        json_build_object(
+          'id', c.id,
+          'name', c.name,
+          'document', ui.document,
+          'phone', ui.phone
+        ) AS client,
+        t.assigned_group,
+        json_build_object(
+          'id', au.id,
+          'name', au.name,
+          'group', au.group_level
+        ) AS assigned_user,
+        json_build_object(
+          'id', tr.id,
+          'categoryId', tr.category_id,
+          'type', tr.type,
+          'reason', tr.reason,
+          'description', tr.description,
+          'expiredAt', tr.expired_at,
+          'typeRecipient', tr.type_recipient,
+          'recipient', tr.recipient
+        ) AS reason,
+        t.status,
+        t.created_at
+      FROM tickets t
+      JOIN users u ON t.created_by = u.id
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN userinfo ui ON ui.user_id = c.id 
+      LEFT JOIN users au ON t.assigned_user = au.id
+      JOIN ticket_reasons tr ON t.reason_id = tr.id
       ${whereClause}
-      ORDER BY ${safeSortBy} ${safeSortOrder}
+      ORDER BY t.${safeSortBy} ${safeSortOrder}
       LIMIT $${values.length + 1}
       OFFSET $${values.length + 2}
     `;
 
       const countQuery = `
-      SELECT COUNT(*)::int AS total FROM tickets
+      SELECT COUNT(*)::int AS total
+      FROM tickets t
+      JOIN users u ON t.created_by = u.id
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN userinfo ui ON ui.user_id = c.id 
+      LEFT JOIN users au ON t.assigned_user = au.id
+      JOIN ticket_reasons tr ON t.reason_id = tr.id
       ${whereClause}
     `;
 
@@ -129,7 +177,16 @@ export class PgTicketRepository implements TicketsRepository {
           'name', au.name,
           'group', au.group_level
         ) AS assigned_user,
-        tr.id AS reason_id,
+        json_build_object(
+          'id', tr.id,
+          'categoryId', tr.category_id,
+          'type', tr.type,
+          'reason', tr.reason,
+          'description', tr.description,
+          'expiredAt', tr.expired_at,
+          'typeRecipient', tr.type_recipient,
+          'recipient', tr.recipient
+        ) AS reason,
         t.status,
         t.created_at
       FROM tickets t
@@ -189,6 +246,7 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findTicketCommentsById(ticket_id: number): Promise<TicketComment[]> {
+    console.log(">>>>>>>", ticket_id)
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(

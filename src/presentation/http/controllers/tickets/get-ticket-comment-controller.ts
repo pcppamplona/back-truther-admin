@@ -5,10 +5,10 @@ export async function getTicketCommentController(
   req: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { id } = req.params as { id: number };
+  const { ticket_id } = req.params as { ticket_id: number };
   
   const useCase = makeGetTicketCommentUseCase();
-  const ticket = await useCase.execute(id);
+  const ticket = await useCase.execute(ticket_id);
 
   return reply.status(200).send(ticket);
 }
