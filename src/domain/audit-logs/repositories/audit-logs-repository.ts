@@ -1,5 +1,6 @@
 import { AuditLog, ActionType, SystemType } from '../model/audit-log'
-import { PaginatedResult, PaginationParams } from '@/shared/pagination'
+import { AuditLogPaginationParams } from '../model/audit-log-pagination-params'
+import { PaginatedResult } from '@/shared/pagination'
 
 export interface CreateAuditLogData {
   method: string
@@ -10,11 +11,12 @@ export interface CreateAuditLogData {
   sender_id: string
   target_type: SystemType
   target_id: string
+  target_external_id?: string
 }
 
 export interface AuditLogsRepository {
   create(data: CreateAuditLogData): Promise<AuditLog>
   findAll(): Promise<AuditLog[]>
   findById(id: number): Promise<AuditLog | null>
-  findPaginated(params: PaginationParams): Promise<PaginatedResult<AuditLog>>
+  findPaginated(params: AuditLogPaginationParams): Promise<PaginatedResult<AuditLog>>
 }

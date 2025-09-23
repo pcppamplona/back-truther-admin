@@ -10,6 +10,9 @@ export interface AuditLog {
   created_at: string
   sender_type: SystemType
   sender_id: string
+  sender_name?: string
   target_type: SystemType
   target_id: string
+  target_name?: string
+  target_external_id?: string
 }
