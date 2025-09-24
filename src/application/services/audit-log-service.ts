@@ -11,6 +11,7 @@ export interface LogActionParams {
   senderId: string,
   targetType: SystemType
   targetId: string
+  targetExternalId?: string
 }
 
 export class AuditLogService {
@@ -25,7 +26,8 @@ export class AuditLogService {
       senderType,
       senderId,
       targetType,
-      targetId
+      targetId,
+      targetExternalId
     } = params
 
     return this.createAuditLogUseCase.execute({
@@ -36,7 +38,8 @@ export class AuditLogService {
       sender_type: senderType,
       sender_id: senderId,
       target_type: targetType,
-      target_id: targetId
+      target_id: targetId,
+      target_external_id: targetExternalId
     })
   }
 }

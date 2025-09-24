@@ -213,7 +213,8 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       target_type,
       target_external_id,
       created_after,
-      created_before
+      created_before,
+      description
     } = params
 
     const client = await PostgresDatabase.getClient()
@@ -241,6 +242,11 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
     if (search) {
       values.push(`%${search}%`)
       where.push(`(message ILIKE $${values.length} OR method ILIKE $${values.length})`)
+    }
+    
+    if (description) {
+      values.push(`%${description}%`)
+      where.push(`description ILIKE $${values.length}`)
     }
 
     if (action) {
