@@ -5,7 +5,7 @@ import { AuditLogPaginationParams } from "@/domain/audit-logs/model/audit-log-pa
 export async function listAuditLogsPaginatedController(req: FastifyRequest, reply: FastifyReply) {
   const { 
     page = "1", 
-    limit = "100", 
+    limit = "10",
     search, 
     sortBy, 
     sortOrder,
@@ -17,7 +17,8 @@ export async function listAuditLogsPaginatedController(req: FastifyRequest, repl
     target_type,
     target_external_id,
     created_after,
-    created_before
+    created_before,
+    description
   } = req.query as any
 
   const useCase = makeListAuditLogsPaginatedUseCase()
@@ -35,7 +36,8 @@ export async function listAuditLogsPaginatedController(req: FastifyRequest, repl
     target_type,
     target_external_id,
     created_after,
-    created_before
+    created_before,
+    description
   }
   const result = await useCase.execute(params)
 
