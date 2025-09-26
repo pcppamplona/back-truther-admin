@@ -246,7 +246,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findTicketCommentsById(ticket_id: number): Promise<TicketComment[]> {
-    console.log(">>>>>>>", ticket_id)
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
@@ -352,7 +351,6 @@ export class PgTicketRepository implements TicketsRepository {
     try {
       await client.query("BEGIN");
 
-      // 1️⃣ Buscar ticket com lock
       const ticketResult = await client.query(
         `SELECT * FROM tickets WHERE id = $1 FOR UPDATE`,
         [data.ticketId]
@@ -360,7 +358,6 @@ export class PgTicketRepository implements TicketsRepository {
       const ticket = ticketResult.rows[0];
       if (!ticket) throw new Error("Ticket não encontrado");
 
-      // 2️⃣ Criar comentário se existir
       if (data.commentText) {
         await client.query(
           `INSERT INTO ticket_comments (ticket_id, author, message, date)
@@ -380,7 +377,6 @@ export class PgTicketRepository implements TicketsRepository {
         });
       }
 
-      // 3️⃣ Buscar reply actions
       const replyActions = await client.query(
         `SELECT * FROM reply_actions WHERE reply_id = $1`,
         [data.replyId]
@@ -422,8 +418,6 @@ export class PgTicketRepository implements TicketsRepository {
           console.log(`Email simulado enviado para: ${action.data.email}`);
         }
       }
-
-      // 4️⃣ Finalizar ticket
       const assignedTo =
         ticket.assigned_user ?? (data.forceAssign ? data.user.id : null);
       const updateResult = await client.query(

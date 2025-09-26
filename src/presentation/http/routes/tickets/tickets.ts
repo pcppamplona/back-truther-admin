@@ -78,8 +78,8 @@ export async function ticketsRoutes(app: FastifyInstance) {
         schema: {
           tags: ["Ticket"],
           summary: "update ticket (requires authentication)",
-          params: updateTicketParamsSchema,
-          body: updateTicketBodySchema,
+          // params: updateTicketParamsSchema,
+          // body: updateTicketBodySchema,
         },
       },
       updateTicketController

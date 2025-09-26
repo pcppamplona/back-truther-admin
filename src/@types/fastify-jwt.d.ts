@@ -16,12 +16,14 @@ declare module '@fastify/jwt' {
     payload: {
       sub: string
       role: 'ADMIN' | 'CONSUMER'
+      name: string 
     }
     user: {
       sub: string
       role: 'ADMIN' | 'CONSUMER'
       iat: number
       exp: number
+      name: string
     }
   }
 }

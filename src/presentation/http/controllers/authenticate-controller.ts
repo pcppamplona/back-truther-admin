@@ -27,6 +27,7 @@ export async function authenticateController(
   const token = request.server.generateJwt({
     sub: user.id,
     role: user.groupLevel,
+    name: user.name
   });
   return reply.status(200).send({ token });
 }
