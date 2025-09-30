@@ -11,7 +11,6 @@ export async function getAuditLogTicketController(
   });
 
   const { ticket_id } = paramsSchema.parse(req.params);
-  console.log("chega no controller:",ticket_id)
   const useCase = makeGetAuditLogTicketUseCase();
   const auditLog = await useCase.execute(ticket_id);
 

@@ -9,7 +9,7 @@ export async function createTicketController(
   const { body } = req as { body: Ticket };
   const useCase = makeCreateTicketUseCase();
   const ticket = await useCase.execute(body as any);
-
+  
   await req.audit({
     action: "crm",
     message: "User create ticket",
@@ -19,7 +19,7 @@ export async function createTicketController(
     senderId: String(req.user.sub),
     targetType: "ADMIN",
     targetId: "1",
-    targetExternalId: body.id,
+    targetExternalId: ticket?.id
   });
   return reply.status(200).send(ticket);
 }

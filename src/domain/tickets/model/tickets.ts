@@ -27,7 +27,7 @@ export type Reason = {
   category_id: string;
   type: string;
   reason: string;
-  expired_at: string;
+  expired_at: number;
   description: string;
   type_recipient: TypeRecipient;
   recipient: string; 
