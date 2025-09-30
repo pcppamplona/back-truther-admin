@@ -13,12 +13,12 @@ export class AdminUserMapper {
       username: row.username,
       password: row.password,
       active: row.active,
-      createdAt: row.createdAt || row.created_at,
-      updatedAt: row.updatedAt || row.updated_at,
-      deletedAt: row.deletedAt || row.deleted_at,
-      forceResetPwd: row.forceResetPwd || row.force_reset_pwd,
-      typeAuth: row.typeAuth || row.type_auth,
-      groupLevel: row.groupLevel || row.group_level
+      created_at: row.createdAt || row.created_at,
+      updated_at: row.updatedAt || row.updated_at,
+      deleted_at: row.deletedAt || row.deleted_at,
+      forceReset_pwd: row.forceResetPwd || row.force_reset_pwd,
+      type_auth: row.typeAuth || row.type_auth,
+      group_level: row.groupLevel || row.group_level
     }
   }
 

@@ -332,7 +332,7 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await PostgresDatabase.getClient();
     try {
       const result = await client.query(
-        `SELECT id, reply_id AS "reply_id", type, data
+        `SELECT id, reply_id AS "reply_id", event_id
          FROM reply_actions
          WHERE reply_id = $1`,
         [replyId]
@@ -353,34 +353,38 @@ export class PgTicketRepository implements TicketsRepository {
 
       const ticketResult = await client.query(
         `SELECT * FROM tickets WHERE id = $1 FOR UPDATE`,
-        [data.ticketId]
+        [data.ticket_id]
       );
       const ticket = ticketResult.rows[0];
       if (!ticket) throw new Error("Ticket não encontrado");
 
-      if (data.commentText) {
+      if (data.comment_text) {
         await client.query(
           `INSERT INTO ticket_comments (ticket_id, author, message, date)
          VALUES ($1, $2, $3, NOW())`,
-          [data.ticketId, data.user.name, data.commentText]
+          [data.ticket_id, data.user.name, data.comment_text]
         );
 
         await data.req?.audit?.({
           method: "POST",
           action: "alter",
           message: "Comentário adicionado",
-          description: `Comentário adicionado ao ticket ${data.ticketId}`,
+          description: `Comentário adicionado ao ticket ${data.ticket_id}`,
           sender_type: "USER",
           sender_id: String(data.user.id),
           target_type: "GUENO",
-          target_id: String(data.ticketId),
+          target_id: String(data.ticket_id),
         });
       }
-
       const replyActions = await client.query(
-        `SELECT * FROM reply_actions WHERE reply_id = $1`,
-        [data.replyId]
+        `SELECT ra.id, ra.reply_id, ra.event_id, e.name as event_name
+        FROM reply_actions ra
+        JOIN events e ON ra.event_id = e.id
+        WHERE ra.reply_id = $1`,
+        [data.reply_id]
       );
+
+
       for (const action of replyActions.rows) {
         if (action.type === "new_event") {
           const reasonResult = await client.query(
@@ -406,11 +410,11 @@ export class PgTicketRepository implements TicketsRepository {
             method: "POST",
             action: "alter",
             message: "Novo evento criado",
-            description: `Criado novo evento vinculado à finalização de ${data.ticketId}`,
+            description: `Criado novo evento vinculado à finalização de ${data.ticket_id}`,
             sender_type: "USER",
-            sender_id: String(data.user.id),
+            sender_id: data.user.id,
             target_type: "GUENO",
-            target_id: String(data.ticketId),
+            target_id: data.ticket_id,
           });
         }
 
@@ -419,10 +423,10 @@ export class PgTicketRepository implements TicketsRepository {
         }
       }
       const assignedTo =
-        ticket.assigned_user ?? (data.forceAssign ? data.user.id : null);
+        ticket.assigned_user ?? (data.force_assign ? data.user.id : null);
       const updateResult = await client.query(
         `UPDATE tickets SET status = 'FINALIZADO', assigned_user = $1 WHERE id = $2 RETURNING *`,
-        [assignedTo, data.ticketId]
+        [assignedTo, data.ticket_id]
       );
       const updatedTicket = updateResult.rows[0];
 
@@ -430,11 +434,11 @@ export class PgTicketRepository implements TicketsRepository {
         method: "PATCH",
         action: "alter",
         message: "Ticket finalizado",
-        description: `Ticket ${data.ticketId} finalizado por ${data.user.name}`,
+        description: `Ticket ${data.ticket_id} finalizado por ${data.user.name}`,
         sender_type: "USER",
         sender_id: String(data.user.id),
         target_type: "GUENO",
-        target_id: String(data.ticketId),
+        target_id: String(data.ticket_id),
       });
 
       await client.query("COMMIT");

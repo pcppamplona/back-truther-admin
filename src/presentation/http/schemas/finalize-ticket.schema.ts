@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const finalizeTicketParamsSchema = z.object({
-  id: z.coerce.number(), // garante que venha como número
+  id: z.coerce.number(),
 });
 
 export const finalizeTicketBodySchema = z.object({
-  replyId: z.number(),
-  commentText: z.string().optional(),
-  forceAssign: z.boolean().optional(),
+  reply_id: z.number(),
+  comment_text: z.string().optional(),
+  force_assign: z.boolean().optional(),
 });

@@ -62,40 +62,40 @@ export class PgUserRepository implements UsersRepository {
     }
   }
 
-async findPaginated(
-  params: PaginationParams
-): Promise<PaginatedResult<User>> {
-  const { page, limit, search, sortBy = "id", sortOrder = "ASC" } = params;
-  const client = await PostgresDatabase.getClient();
+  async findPaginated(
+    params: PaginationParams
+  ): Promise<PaginatedResult<User>> {
+    const { page, limit, search, sortBy = "id", sortOrder = "ASC" } = params;
+    const client = await PostgresDatabase.getClient();
 
-  const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-  const allowedSortBy = [
-    "id",
-    "uuid",
-    "name",
-    "username",
-    "created_at",
-    "updated_at",
-    "group_level",
-  ];
-  const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "id";
-  const safeSortOrder = sortOrder?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+    const allowedSortBy = [
+      "id",
+      "uuid",
+      "name",
+      "username",
+      "created_at",
+      "updated_at",
+      "group_level",
+    ];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "id";
+    const safeSortOrder = sortOrder?.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-  const where: string[] = [];
-  const values: any[] = [];
+    const where: string[] = [];
+    const values: any[] = [];
 
-  if (search) {
-    values.push(`%${search}%`);
-    where.push(
-      `(name ILIKE $${values.length} OR username ILIKE $${values.length})`
-    );
-  }
+    if (search) {
+      values.push(`%${search}%`);
+      where.push(
+        `(name ILIKE $${values.length} OR username ILIKE $${values.length})`
+      );
+    }
 
-  const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
-  try {
-    const query = `
+    try {
+      const query = `
       SELECT
         id,
         uuid,
@@ -116,28 +116,26 @@ async findPaginated(
       OFFSET $${values.length + 2}
     `;
 
-    const countQuery = `
-      SELECT COUNT(*)::int AS total
-      FROM users
+      const countQuery = `
+      SELECT COUNT(*)::int AS total FROM users
       ${whereClause}
     `;
 
-    const result = await client.query(query, [...values, limit, offset]);
-    const countResult = await client.query(countQuery, values);
+      const result = await client.query(query, [...values, limit, offset]);
+      const countResult = await client.query(countQuery, values);
 
-    return {
-      data: AdminUserMapper.toUserList(result.rows),
-      total: Number(countResult.rows[0].total),
-      page,
-      limit,
-    };
-  } finally {
-    client.release();
+      return {
+        data: AdminUserMapper.toUserList(result.rows),
+        total: Number(countResult.rows[0].total),
+        page,
+        limit,
+      };
+    } finally {
+      client.release();
+    }
   }
-}
 
   async findById(id: number): Promise<User | null> {
-    console.log("ID>>>", id);
     const client = await PostgresDatabase.getClient();
 
     try {
