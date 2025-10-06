@@ -6,25 +6,25 @@ export async function finalizeTicketController(
   reply: FastifyReply
 ) {
   const { id } = req.params as { id: number };
-  const { reply_id, comment_text, force_assign } = req.body as {
+  const { reply_id, comment } = req.body as {
     reply_id: number;
-    comment_text?: string;
-    force_assign?: boolean;
+    comment?: string;
   };
 
   const finalizeTicketUseCase = makeFinalizeTicket();
 
+  const user = {
+    id: req.user.sub,
+    name: req.user.name,
+    group: req.user.role,
+  };
+
   const result = await finalizeTicketUseCase.execute({
     ticket_id: id,
     reply_id,
-    comment_text,
-    force_assign,
-    user: {
-      id: req.user.iat,
-      name: req.user.name,
-      group: req.user.role
-    },
-  });
+    comment,
+    user,
+  }, req);
 
   return reply.status(200).send(result);
 }

@@ -167,8 +167,6 @@ export async function ticketsRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Ticket"],
         summary: "Finaliza ticket, executa actions, cria comentários e audita",
-        params: finalizeTicketParamsSchema,
-        body: finalizeTicketBodySchema,
       },
     },
     finalizeTicketController

@@ -5,18 +5,46 @@ import {
   ReplyAction,
   Ticket,
   TicketComment,
+  TicketData,
 } from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import { PostgresDatabase } from "../../pg/connection";
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
+import { PoolClient } from "pg";
 
 export class PgTicketRepository implements TicketsRepository {
-  async createTicket(data: Ticket): Promise<Ticket> {
+  constructor(private client?: PoolClient) {}
+
+  private async getClient(): Promise<PoolClient> {
+    if (this.client) return this.client;
+    return PostgresDatabase.getClient();
+  }
+
+  async withTransaction<T>(
+    callback: (txRepo: PgTicketRepository) => Promise<T>
+  ): Promise<T> {
     const client = await PostgresDatabase.getClient();
     try {
+      await client.query("BEGIN");
+      const txRepo = new PgTicketRepository(client);
+      const result = await callback(txRepo);
+      await client.query("COMMIT");
+      return result;
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  async createTicket(data: Ticket): Promise<Ticket> {
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
+    try {
       const result = await client.query(
-        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
         [
           data.created_by,
@@ -25,24 +53,24 @@ export class PgTicketRepository implements TicketsRepository {
           data.assigned_user,
           data.reason_id,
           data.status,
-          data.created_at,
         ]
       );
       return result.rows[0] as Ticket;
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findAll(): Promise<Ticket[]> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM tickets ORDER BY created_at DESC`
       );
       return result.rows as Ticket[];
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
@@ -57,7 +85,8 @@ export class PgTicketRepository implements TicketsRepository {
       sortOrder = "DESC",
     } = params;
 
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     const offset = (page - 1) * limit;
 
     // Defina os campos que podem ser usados no ORDER BY
@@ -149,12 +178,13 @@ export class PgTicketRepository implements TicketsRepository {
         limit,
       };
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
-  async findById(id: number): Promise<Ticket | null> {
-    const client = await PostgresDatabase.getClient();
+  async findById(id: number): Promise<TicketData | null> {
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `
@@ -203,12 +233,13 @@ export class PgTicketRepository implements TicketsRepository {
 
       return result.rows[0] ?? null;
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const fields = Object.keys(data);
       const values = Object.values(data);
@@ -226,27 +257,29 @@ export class PgTicketRepository implements TicketsRepository {
 
       return result.rows[0] as Ticket;
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async createTicketComment(data: TicketComment): Promise<TicketComment> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
-        `INSERT INTO ticket_comments (ticket_id, author, message, date)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO ticket_comments (ticket_id, author, message)
+         VALUES ($1, $2, $3)
          RETURNING *`,
-        [data.ticket_id, data.author, data.message, data.date]
+        [data.ticket_id, data.author, data.message]
       );
       return result.rows[0] as TicketComment;
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findTicketCommentsById(ticket_id: number): Promise<TicketComment[]> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM ticket_comments WHERE ticket_id = $1 ORDER BY date DESC`,
@@ -254,12 +287,13 @@ export class PgTicketRepository implements TicketsRepository {
       );
       return result.rows as TicketComment[];
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findTicketReasonByCategoryId(category_id: number): Promise<Reason[]> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `
@@ -279,12 +313,13 @@ export class PgTicketRepository implements TicketsRepository {
       );
       return result.rows as Reason[];
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findTicketReasonById(id: number): Promise<Reason | null> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `
@@ -305,14 +340,15 @@ export class PgTicketRepository implements TicketsRepository {
       );
       return result.rows[0] ?? null;
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findReplyReasonsByReasonId(
     reason_id: number
   ): Promise<FinalizationReply[]> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT id, reason_id AS "reason_id", reply, comment
@@ -322,132 +358,25 @@ export class PgTicketRepository implements TicketsRepository {
       );
       return result.rows as FinalizationReply[];
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
   async findReplyReasonsActionsByReplyId(
     replyId: number
   ): Promise<ReplyAction[]> {
-    const client = await PostgresDatabase.getClient();
+    // const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
-        `SELECT id, reply_id AS "reply_id", event_id
+        `SELECT id, reply_id AS "reply_id", action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_to_group
          FROM reply_actions
          WHERE reply_id = $1`,
         [replyId]
       );
       return result.rows as ReplyAction[];
     } finally {
-      client.release();
-    }
-  }
-
-  async finalizeTicket(
-    data: FinalizeTicketInput & { req?: any }
-  ): Promise<Ticket> {
-    const client = await PostgresDatabase.getClient();
-
-    try {
-      await client.query("BEGIN");
-
-      const ticketResult = await client.query(
-        `SELECT * FROM tickets WHERE id = $1 FOR UPDATE`,
-        [data.ticket_id]
-      );
-      const ticket = ticketResult.rows[0];
-      if (!ticket) throw new Error("Ticket não encontrado");
-
-      if (data.comment_text) {
-        await client.query(
-          `INSERT INTO ticket_comments (ticket_id, author, message, date)
-         VALUES ($1, $2, $3, NOW())`,
-          [data.ticket_id, data.user.name, data.comment_text]
-        );
-
-        await data.req?.audit?.({
-          method: "POST",
-          action: "alter",
-          message: "Comentário adicionado",
-          description: `Comentário adicionado ao ticket ${data.ticket_id}`,
-          sender_type: "USER",
-          sender_id: String(data.user.id),
-          target_type: "GUENO",
-          target_id: String(data.ticket_id),
-        });
-      }
-      const replyActions = await client.query(
-        `SELECT ra.id, ra.reply_id, ra.event_id, e.name as event_name
-        FROM reply_actions ra
-        JOIN events e ON ra.event_id = e.id
-        WHERE ra.reply_id = $1`,
-        [data.reply_id]
-      );
-
-
-      for (const action of replyActions.rows) {
-        if (action.type === "new_event") {
-          const reasonResult = await client.query(
-            `SELECT * FROM ticket_reasons WHERE id = $1`,
-            [action.data.reasonId]
-          );
-          const reason = reasonResult.rows[0];
-          if (!reason) throw new Error("Reason não encontrado");
-
-          await client.query(
-            `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, created_at)
-           VALUES ($1, $2, $3, $4, $5, 'PENDENTE', NOW())`,
-            [
-              JSON.stringify(data.user),
-              ticket.client_id,
-              action.data.groupId ?? data.user.group,
-              data.user.id,
-              reason.id,
-            ]
-          );
-
-          await data.req?.audit?.({
-            method: "POST",
-            action: "alter",
-            message: "Novo evento criado",
-            description: `Criado novo evento vinculado à finalização de ${data.ticket_id}`,
-            sender_type: "USER",
-            sender_id: data.user.id,
-            target_type: "GUENO",
-            target_id: data.ticket_id,
-          });
-        }
-
-        if (action.type === "send_email") {
-          console.log(`Email simulado enviado para: ${action.data.email}`);
-        }
-      }
-      const assignedTo =
-        ticket.assigned_user ?? (data.force_assign ? data.user.id : null);
-      const updateResult = await client.query(
-        `UPDATE tickets SET status = 'FINALIZADO', assigned_user = $1 WHERE id = $2 RETURNING *`,
-        [assignedTo, data.ticket_id]
-      );
-      const updatedTicket = updateResult.rows[0];
-
-      await data.req?.audit?.({
-        method: "PATCH",
-        action: "alter",
-        message: "Ticket finalizado",
-        description: `Ticket ${data.ticket_id} finalizado por ${data.user.name}`,
-        sender_type: "USER",
-        sender_id: String(data.user.id),
-        target_type: "GUENO",
-        target_id: String(data.ticket_id),
-      });
-
-      await client.query("COMMIT");
-      return updatedTicket;
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 }

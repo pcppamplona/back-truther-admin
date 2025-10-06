@@ -1,12 +1,13 @@
 export interface Ticket {
-  id: number;
+  id?: number;
   created_by: number;
   client_id: number | null;
   assigned_group: Group | null;
   assigned_user: number | null;
   reason_id: number;
   status: Status;
-  created_at: string;
+  created_at?: string;
+  finalizate_reply?: number;
 }
 
 export type UserTicket = {
@@ -24,7 +25,7 @@ export type ClientTicket = {
 
 export type Reason = {
   id: number;
-  category_id: string;
+  category_id: number;
   type: string;
   reason: string;
   expired_at: number;
@@ -46,34 +47,47 @@ export type Status =
   | "AGUARDANDO RESPOSTA DO CLIENTE";
 
 export interface TicketComment {
-  id: number;
+  id?: number;
   ticket_id: number;
   author: string;
   message: string;
-  date: string;
+  date?: string;
 }
 
 export interface ReplyAction {
   id: number;
   reply_id: number;
-  event_id: number;
+  action_type_id: number;
+  data_email: string | null;
+  data_new_ticket_reason_id: number | null;
+  data_new_ticket_assign_to_group: Group | null;
 }
 
 export type FinalizationReply = {
   id: number;
   reason_id: number;
   reply: string;
-  comment: Boolean;
+  comment: boolean;
 };
 
 export interface FinalizeTicketInput {
   ticket_id: number;
   reply_id: number;
-  comment_text?: string;
-  force_assign?: boolean;
+  comment?: string;
   user: {
     id: number;
     name: string;
     group: string;
   };
+}
+
+export interface TicketData {
+  id: number;
+  created_by: UserTicket;
+  client: ClientTicket;
+  assigned_group: string | null;
+  assigned_user: UserTicket | null;
+  reason: Reason;
+  status: Status;
+  created_at: string;
 }

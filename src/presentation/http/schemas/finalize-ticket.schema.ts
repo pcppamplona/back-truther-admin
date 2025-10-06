@@ -6,6 +6,5 @@ export const finalizeTicketParamsSchema = z.object({
 
 export const finalizeTicketBodySchema = z.object({
   reply_id: z.number(),
-  comment_text: z.string().optional(),
-  force_assign: z.boolean().optional(),
+  comment: z.string().optional(),
 });

@@ -60,6 +60,23 @@ export class ErrorMapperService {
       }
     }
 
+    if (
+      error instanceof Error &&
+      error.message.includes('Release called on client')
+    ) {
+      loggerService.db({
+        message: '[PG POOL ERROR]',
+        meta: {
+          message: error.message,
+        },
+      })
+
+      return {
+        statusCode: 500,
+        message: 'Erro interno ao liberar conexão do banco de dados.',
+      }
+    }
+
     return {
       statusCode: 500,
       message: 'Internal server error',
