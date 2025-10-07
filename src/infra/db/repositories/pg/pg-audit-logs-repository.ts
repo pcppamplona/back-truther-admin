@@ -240,7 +240,7 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       target_type,
       target_external_id,
       created_after,
-      created_before,,
+      created_before,
       description
     } = params;
 
