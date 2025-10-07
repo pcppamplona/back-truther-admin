@@ -10,4 +10,5 @@ export interface AuditLogPaginationParams extends PaginationParams {
   target_external_id?: string
   created_after?: string
   created_before?: string
+  description?: string
 }

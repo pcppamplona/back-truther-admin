@@ -13,6 +13,7 @@ export interface LogActionParams {
   targetId: string
   target_name?: string
   targetExternalId?: number
+  targetExternalId?: string
 }
 
 export class AuditLogService {
