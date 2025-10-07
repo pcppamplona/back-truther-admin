@@ -94,7 +94,7 @@ export class ActionExecutor {
       await data.audit({
         action: "crm",
         message: "Sistema criou comentário automático",
-        description: `Ticket ${newTicket.id} criado da finalização do ticket ${ticket.id}`,
+        description: `Comentário de criação do ticket: ${newTicket.id} criado pelo sistema!`,
         method: "POST",
         senderType: "ADMIN",
         senderId: String(data.user.id),
