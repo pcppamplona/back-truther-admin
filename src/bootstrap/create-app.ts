@@ -1,78 +1,80 @@
-import fastifyCors from '@fastify/cors'
-import fastifySwagger from '@fastify/swagger'
-import fastifySwaggerUI from '@fastify/swagger-ui'
-import fastify from 'fastify'
+import fastifyCors from "@fastify/cors";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUI from "@fastify/swagger-ui";
+import fastify from "fastify";
 import {
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   ZodTypeProvider,
-} from 'fastify-type-provider-zod'
+} from "fastify-type-provider-zod";
 
-import { env } from '@/infra/env'
-import jwtPlugin from '@/infra/plugins/jwt'
-import swaggerAuth from '@/infra/plugins/swagger-auth'
-import auditPlugin from '@/infra/plugins/audit'
-import { errorHandler } from '@/presentation/http/middlewares/error-handler'
+import { env } from "@/infra/env";
+import jwtPlugin from "@/infra/plugins/jwt";
+import swaggerAuth from "@/infra/plugins/swagger-auth";
+import auditPlugin from "@/infra/plugins/audit";
+import { errorHandler } from "@/presentation/http/middlewares/error-handler";
 
-import { LoggerInterceptor } from '../presentation/http/interceptors/logger-interceptor'
-import { registerRoutes } from '../presentation/http/routes'
+import { LoggerInterceptor } from "../presentation/http/interceptors/logger-interceptor";
+import { registerRoutes } from "../presentation/http/routes";
 
 export async function createApp() {
   const app = fastify({
     trustProxy: true,
-  }).withTypeProvider<ZodTypeProvider>()
+  }).withTypeProvider<ZodTypeProvider>();
 
   // Set compilers
-  app.setSerializerCompiler(serializerCompiler)
-  app.setValidatorCompiler(validatorCompiler)
+  app.setSerializerCompiler(serializerCompiler);
+  app.setValidatorCompiler(validatorCompiler);
 
   // Global error handler
-  app.setErrorHandler(errorHandler)
+  app.setErrorHandler(errorHandler);
 
   // Plugins
-  await app.register(fastifyCors)
-  await app.register(jwtPlugin)
-  await app.register(swaggerAuth)
-  await app.register(auditPlugin)
+  await app.register(fastifyCors, {
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  });
+  await app.register(jwtPlugin);
+  await app.register(swaggerAuth);
+  await app.register(auditPlugin);
 
   await app.register(fastifySwagger, {
     openapi: {
       info: {
-        title: 'APP/SERVICE NAME',
-        description: 'APP/SERVICE DESCRIPTION',
-        version: '1.0.0',
+        title: "APP/SERVICE NAME",
+        description: "APP/SERVICE DESCRIPTION",
+        version: "1.0.0",
       },
       components: {
         securitySchemes: {
           bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
           },
         },
       },
       servers: [],
     },
     transform: jsonSchemaTransform,
-  })
+  });
 
-  if (env.NODE_ENV === 'dev') {
+  if (env.NODE_ENV === "dev") {
     await app.register(async function (instance) {
-      instance.addHook('onRequest', instance.basicAuth)
+      instance.addHook("onRequest", instance.basicAuth);
 
       await instance.register(fastifySwaggerUI, {
-        routePrefix: '/docs',
+        routePrefix: "/docs",
         staticCSP: true,
-      })
-    })
+      });
+    });
   }
 
   // Interceptors
-  LoggerInterceptor.register(app)
+  LoggerInterceptor.register(app);
 
   // Register routes
-  registerRoutes(app)
+  registerRoutes(app);
 
-  return app
+  return app;
 }

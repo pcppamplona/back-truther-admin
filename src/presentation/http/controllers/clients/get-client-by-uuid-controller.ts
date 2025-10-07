@@ -1,15 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { makeGetClientByUuidUseCase } from '@/application/factories/clients/make-get-client-by-uuid'
 
-interface Params {
-  uuid: string
-}
-
 export async function getClientByUuidController(
-  request: FastifyRequest<{ Params: Params }>,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const { uuid } = request.params
+  const { uuid } = request.params as { uuid: string}
   const useCase = makeGetClientByUuidUseCase()
   const client = await useCase.execute(uuid)
   if (!client) {

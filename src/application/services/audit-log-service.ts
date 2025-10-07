@@ -7,10 +7,12 @@ export interface LogActionParams {
   action: ActionType
   message: string
   description?: string
-  senderType: SystemType,
+  senderType: SystemType
   senderId: string,
   targetType: SystemType
   targetId: string
+  target_name?: string
+  targetExternalId?: number
   targetExternalId?: string
 }
 

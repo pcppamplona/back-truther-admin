@@ -11,7 +11,7 @@ export interface CreateAuditLogData {
   sender_id: string
   target_type: SystemType
   target_id: string
-  target_external_id?: string
+  target_external_id?: number
 }
 
 export interface AuditLogsRepository {
@@ -19,4 +19,5 @@ export interface AuditLogsRepository {
   findAll(): Promise<AuditLog[]>
   findById(id: number): Promise<AuditLog | null>
   findPaginated(params: AuditLogPaginationParams): Promise<PaginatedResult<AuditLog>>
+  findByTicketId(ticket_id: number): Promise<AuditLog[] | null>
 }

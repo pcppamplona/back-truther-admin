@@ -1,16 +1,18 @@
-export type SystemType = "GUENO" | "ADMIN" | "USER_CLIENT" | "USER" | "CLIENT"
-
-export type ActionType = "security" | "listing" | "alter" | "crm"
+export type ActionType = 'security' | 'listing' | 'alter' | 'crm'
+export type SystemType = 'GUENO' | 'ADMIN' | 'USER_CLIENT' | 'USER' | 'CLIENT'
 
 export interface AuditLog {
   id: number
-  method: string // http method
+  method: string
   action: ActionType
   message: string
-  description?: string // not required
-  createdAt: string // timestamp
-  senderType: SystemType
-  senderId: string // who generated the log
-  targetType: SystemType
-  targetId: string
+  description: string | null
+  created_at: string
+  sender_type: SystemType
+  sender_id: string
+  sender_name?: string
+  target_type: SystemType
+  target_id: string
+  target_name?: string
+  target_external_id?: string
 }

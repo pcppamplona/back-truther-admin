@@ -4,6 +4,7 @@ import { createAuditLogController } from "../../controllers/audit-logs/create-au
 import { getAuditLogByIdController } from "../../controllers/audit-logs/get-audit-log-by-id-controller";
 import { listAuditLogsPaginatedController } from "../../controllers/audit-logs/list-audit-logs-paginated-controller";
 import { verifyJwt } from "../../middlewares/verify-jwt";
+import { getAuditLogTicketController } from "../../controllers/audit-logs/get-audit-log-ticket-controller";
 
 export async function auditLogsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -38,5 +39,17 @@ export async function auditLogsRoutes(app: FastifyInstance) {
       },
     },
     createAuditLogController
+  ),
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/audit-logs/ticket/:ticket_id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Logs de Auditoria"],
+        summary: "Obter log de auditoria de um ticket por ID (requer autenticação)",
+      },
+    },
+    getAuditLogTicketController
   );
 }

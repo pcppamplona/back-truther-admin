@@ -1,8 +1,12 @@
 import type { User } from "@/domain/user/model/user";
-import type { PaginationParams, PaginatedResult, UsersRepository } from "@/domain/user/repositories/user-repository";
+import type {
+  PaginationParams,
+  PaginatedResult,
+  UsersRepository,
+} from "@/domain/user/repositories/user-repository";
 
-import { PostgresDatabase } from '../../pg/connection'
-import { AdminUserMapper } from '../../mappers/admin-user-mapper'
+import { PostgresDatabase } from "../../pg/connection";
+import { AdminUserMapper } from "../../mappers/admin-user-mapper";
 
 export class PgUserRepository implements UsersRepository {
   async findByName(username: string): Promise<User | null> {
@@ -25,11 +29,11 @@ export class PgUserRepository implements UsersRepository {
         [username]
       );
 
-      if (result.rowCount === 0) return null
+      if (result.rowCount === 0) return null;
 
-      return AdminUserMapper.toUser(result.rows[0])
+      return AdminUserMapper.toUser(result.rows[0]);
     } finally {
-      client.release()
+      client.release();
     }
   }
 
@@ -57,49 +61,74 @@ export class PgUserRepository implements UsersRepository {
       client.release();
     }
   }
-  
-  async findAllPaginated({ page, limit }: PaginationParams): Promise<PaginatedResult<User>> {
+
+  async findPaginated(
+    params: PaginationParams
+  ): Promise<PaginatedResult<User>> {
+    const { page, limit, search, sortBy = "id", sortOrder = "ASC" } = params;
     const client = await PostgresDatabase.getClient();
-    try {
-      // Calculate offset based on page and limit
-      const offset = (page - 1) * limit;
-      
-      // Get total count of users
-      const countResult = await client.query('SELECT COUNT(*) FROM users');
-      const total = parseInt(countResult.rows[0].count, 10);
-      
-      // Get paginated users
-      const result = await client.query(
-        `SELECT
-            id,
-            uuid,
-            name,
-            username,
-            password,
-            active,
-            created_at AS "createdAt",
-            updated_at AS "updatedAt",
-            deleted_at AS "deletedAt",
-            force_reset_pwd AS "forceResetPwd",
-            type_auth AS "typeAuth",
-            group_level AS "groupLevel"
-          FROM users
-          ORDER BY id
-          LIMIT $1 OFFSET $2`,
-        [limit, offset]
+
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = [
+      "id",
+      "uuid",
+      "name",
+      "username",
+      "created_at",
+      "updated_at",
+      "group_level",
+    ];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "id";
+    const safeSortOrder = sortOrder?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    const where: string[] = [];
+    const values: any[] = [];
+
+    if (search) {
+      values.push(`%${search}%`);
+      where.push(
+        `(name ILIKE $${values.length} OR username ILIKE $${values.length})`
       );
-      
-      // Calculate total pages
-      const totalPages = Math.ceil(total / limit);
-      
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    try {
+      const query = `
+      SELECT
+        id,
+        uuid,
+        name,
+        username,
+        password,
+        active,
+        created_at AS "createdAt",
+        updated_at AS "updatedAt",
+        deleted_at AS "deletedAt",
+        force_reset_pwd AS "forceResetPwd",
+        type_auth AS "typeAuth",
+        group_level AS "groupLevel"
+      FROM users
+      ${whereClause}
+      ORDER BY ${safeSortBy} ${safeSortOrder}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+    `;
+
+      const countQuery = `
+      SELECT COUNT(*)::int AS total FROM users
+      ${whereClause}
+    `;
+
+      const result = await client.query(query, [...values, limit, offset]);
+      const countResult = await client.query(countQuery, values);
+
       return {
         data: AdminUserMapper.toUserList(result.rows),
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages
-        }
+        total: Number(countResult.rows[0].total),
+        page,
+        limit,
       };
     } finally {
       client.release();
@@ -107,7 +136,6 @@ export class PgUserRepository implements UsersRepository {
   }
 
   async findById(id: number): Promise<User | null> {
-    console.log("ID>>>", id);
     const client = await PostgresDatabase.getClient();
 
     try {
@@ -131,12 +159,12 @@ export class PgUserRepository implements UsersRepository {
           LIMIT 1
         `,
         [id]
-      )
+      );
 
-      if (result.rowCount === 0) return null
-      return AdminUserMapper.toUser(result.rows[0])
+      if (result.rowCount === 0) return null;
+      return AdminUserMapper.toUser(result.rows[0]);
     } finally {
-      client.release()
+      client.release();
     }
   }
 }

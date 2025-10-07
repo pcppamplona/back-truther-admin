@@ -1,12 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify"
 import { makeGetClientByIdUseCase } from "@/application/factories/clients/make-get-client-by-id"
-import { GetClientByIdParamsSchema } from "../../schemas/clients.schema"
 
 export async function getClientByIdController(
-  request: FastifyRequest<{ Params: GetClientByIdParamsSchema }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { id } = request.params
+  const { id } = request.params as { id: number }
   const useCase = makeGetClientByIdUseCase()
 
   const client = await useCase.execute(Number(id))
