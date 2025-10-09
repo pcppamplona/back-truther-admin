@@ -1,3 +1,4 @@
+import { makeGetRepliesByReasonUseCase } from "@/application/factories/ticket-reasons/replies/make-get-replies-by-reason";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function getRepliesByReasonController(req: FastifyRequest, reply: FastifyReply) {

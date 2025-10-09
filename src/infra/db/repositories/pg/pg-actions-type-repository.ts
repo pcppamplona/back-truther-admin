@@ -14,7 +14,7 @@ export class PgActionsTypeRepository implements ActionsTypeRepository {
   async create(type: string): Promise<ActionsType> {
     const client = await this.getClient();
     const result = await client.query(
-      `INSERT INTO ticket_reasons_actions_type (type) VALUES ($1) RETURNING *`,
+      `INSERT INTO actions_type (type) VALUES ($1) RETURNING *`,
       [type]
     );
     return result.rows[0];
@@ -23,7 +23,7 @@ export class PgActionsTypeRepository implements ActionsTypeRepository {
   async findAll(): Promise<ActionsType[]> {
     const client = await this.getClient();
     const result = await client.query(
-      `SELECT * FROM ticket_reasons_actions_type ORDER BY id ASC`
+      `SELECT * FROM actions_type ORDER BY id ASC`
     );
     return result.rows;
   }
@@ -31,7 +31,7 @@ export class PgActionsTypeRepository implements ActionsTypeRepository {
   async delete(id: number): Promise<void> {
     const client = await this.getClient();
     await client.query(
-      `DELETE FROM ticket_reasons_actions_type WHERE id = $1`,
+      `DELETE FROM actions_type WHERE id = $1`,
       [id]
     );
   }

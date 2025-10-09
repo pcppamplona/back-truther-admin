@@ -1,3 +1,4 @@
+import { makeGetReplyActionsUseCase } from "@/application/factories/ticket-reasons/reply-actions/make-get-reply-actions";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function getActionsByReplyController(req: FastifyRequest, reply: FastifyReply) {

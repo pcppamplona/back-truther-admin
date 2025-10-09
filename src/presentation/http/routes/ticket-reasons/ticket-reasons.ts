@@ -104,7 +104,7 @@ export async function ticketReasonRoutes(app: FastifyInstance) {
     createActionsTypeController
   );
 
-  app.withTypeProvider<ZodTypeProvider>().delete(
+  app.withTypeProvider<ZodTypeProvider>().delete(   
     "/ticket-reasons/actions-type/:id",
     {
       preHandler: [verifyJwt()],

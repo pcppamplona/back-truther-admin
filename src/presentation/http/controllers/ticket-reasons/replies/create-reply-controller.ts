@@ -1,3 +1,4 @@
+import { makeCreateReplyUseCase } from "@/application/factories/ticket-reasons/replies/make-create-reply";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function createReplyController(req: FastifyRequest, reply: FastifyReply) {

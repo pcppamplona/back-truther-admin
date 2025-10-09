@@ -1,3 +1,4 @@
+import { makeCreateReplyActionsUseCase } from "@/application/factories/ticket-reasons/reply-actions/make-create-reply-actions";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function createReplyActionController(req: FastifyRequest, reply: FastifyReply) {
@@ -8,7 +9,7 @@ export async function createReplyActionController(req: FastifyRequest, reply: Fa
     data_new_ticket_reason_id: number | null;
     data_new_ticket_assign_to_group: string | null;
   };
-  const useCase = makeCreateReplyActionUseCase();
+  const useCase = makeCreateReplyActionsUseCase();
   const result = await useCase.execute({ reply_id, ...data });
   return reply.status(201).send(result);
 }

@@ -1,3 +1,4 @@
+import { makeDeleteReplyUseCase } from "@/application/factories/ticket-reasons/replies/make-delete-reply";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function deleteReplyController(req: FastifyRequest, reply: FastifyReply) {
