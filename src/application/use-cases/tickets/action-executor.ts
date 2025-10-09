@@ -1,11 +1,11 @@
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import {
-  Ticket,
+ 
   FinalizeTicketInput,
-  ReplyAction,
   TicketData,
 } from "@/domain/tickets/model/tickets";
 import { FastifyRequest } from "fastify";
+import { ReplyAction } from "@/domain/reasons/model/ticket-reasons";
 
 export class ActionExecutor {
   constructor(private repo: TicketsRepository) {}

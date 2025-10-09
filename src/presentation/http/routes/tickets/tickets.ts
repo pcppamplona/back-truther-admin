@@ -5,20 +5,12 @@ import { getTicketsController } from "../../controllers/tickets/get-tickets-cont
 import { getTicketByIdController } from "../../controllers/tickets/get-ticket-by-id-controller";
 import { createTicketController } from "../../controllers/tickets/create-ticket-controller";
 import { updateTicketController } from "../../controllers/tickets/update-ticket-controller";
-import {
-  updateTicketBodySchema,
-  updateTicketParamsSchema,
-} from "../../schemas/updat-ticket.schema";
 import { getTicketCommentController } from "../../controllers/tickets/get-ticket-comment-controller";
 import { createTicketCommentController } from "../../controllers/tickets/create-ticket-comment-controller";
 import { getTicketReasonsByCategoryController } from "../../controllers/tickets/get-ticket-reasons-by-category-controller";
 import { getTicketReasonsByIdController } from "../../controllers/tickets/get-ticket-reasons-by-id-controller";
 import { getTicketReasonsReplyController } from "../../controllers/tickets/get-ticket-reasons-reply-controller";
 import { getTicketReasonsReplyActionsController } from "../../controllers/tickets/get-ticket-reasons-reply-actions-controller";
-import {
-  finalizeTicketBodySchema,
-  finalizeTicketParamsSchema,
-} from "../../schemas/finalize-ticket.schema";
 import { finalizeTicketController } from "../../controllers/tickets/finalize-ticket-controller";
 import { GetTicketsPaginatedController } from "../../controllers/tickets/get-tickets-paginated-controller";
 import { PaginatedQuerySchema } from "../../schemas/paginated.schema";

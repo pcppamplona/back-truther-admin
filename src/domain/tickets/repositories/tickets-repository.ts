@@ -1,12 +1,11 @@
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 import {
   FinalizationReply,
-  Reason,
-  ReplyAction,
   Ticket,
   TicketComment,
   TicketData,
 } from "../model/tickets";
+import { ReplyAction, TicketReason } from "@/domain/reasons/model/ticket-reasons";
 
 export interface TicketsRepository {
   withTransaction<T>(fn: (txRepo: TicketsRepository) => Promise<T>): Promise<T>;
@@ -20,8 +19,8 @@ export interface TicketsRepository {
   createTicketComment(data: TicketComment): Promise<TicketComment>;
   findTicketCommentsById(ticket_id: number): Promise<TicketComment[]>;
 
-  findTicketReasonByCategoryId(category_id: number): Promise<Reason[]>;
-  findTicketReasonById(id: number): Promise<Reason | null>;
+  findTicketReasonByCategoryId(category_id: number): Promise<TicketReason[]>;
+  findTicketReasonById(id: number): Promise<TicketReason | null>;
 
   findReplyReasonsByReasonId(reason_id: number): Promise<FinalizationReply[]>;
   findReplyReasonsActionsByReplyId(reply_id: number): Promise<ReplyAction[]>;

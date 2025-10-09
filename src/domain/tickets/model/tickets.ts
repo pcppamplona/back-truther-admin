@@ -1,3 +1,5 @@
+import { TicketReason } from "@/domain/reasons/model/ticket-reasons";
+
 export interface Ticket {
   id?: number;
   created_by: number;
@@ -23,20 +25,8 @@ export type ClientTicket = {
   phone: string;
 };
 
-export type Reason = {
-  id: number;
-  category_id: number;
-  type: string;
-  reason: string;
-  expired_at: number;
-  description: string;
-  type_recipient: TypeRecipient;
-  recipient: string;
-};
-
 export type TypeRecipient = "GROUP" | "USER" | "ALL";
 export type Group = "N1" | "N2" | "N3" | "PRODUTO" | "MKT" | "ADMIN";
-
 export type Status =
   | "PENDENTE"
   | "PENDENTE EXPIRADO"
@@ -46,21 +36,13 @@ export type Status =
   | "FINALIZADO EXPIRADO"
   | "AGUARDANDO RESPOSTA DO CLIENTE";
 
+
 export interface TicketComment {
   id?: number;
   ticket_id: number;
   author: string;
   message: string;
   date?: string;
-}
-
-export interface ReplyAction {
-  id: number;
-  reply_id: number;
-  action_type_id: number;
-  data_email: string | null;
-  data_new_ticket_reason_id: number | null;
-  data_new_ticket_assign_to_group: Group | null;
 }
 
 export type FinalizationReply = {
@@ -87,7 +69,7 @@ export interface TicketData {
   client: ClientTicket;
   assigned_group: string | null;
   assigned_user: UserTicket | null;
-  reason: Reason;
+  reason: TicketReason;
   status: Status;
   created_at: string;
 }
