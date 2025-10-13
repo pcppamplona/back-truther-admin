@@ -108,11 +108,52 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
     return { ...reasonRes.rows[0], replies };
   }
 
-  async findAll() {
+  // async findAll() {
+  //   const client = await this.getClient();
+  //   const res = await client.query(
+  //     `SELECT * FROM ticket_reasons ORDER BY id DESC`
+  //   );
+  //   return res.rows;
+  // }
+  async findAll(): Promise<TicketReason[]> {
     const client = await this.getClient();
     const res = await client.query(
-      `SELECT * FROM ticket_reasons ORDER BY id DESC`
+      `
+    SELECT 
+      tr.*,
+      COALESCE(
+        JSON_AGG(
+          DISTINCT JSONB_BUILD_OBJECT(
+            'id', rr.id,
+            'reply', rr.reply,
+            'comment', rr.comment,
+            'actions', COALESCE(
+              (
+                SELECT JSON_AGG(
+                  JSONB_BUILD_OBJECT(
+                    'id', ra.id,
+                    'action_type_id', ra.action_type_id,
+                    'data_email', ra.data_email,
+                    'data_new_ticket_reason_id', ra.data_new_ticket_reason_id,
+                    'data_new_ticket_assign_to_group', ra.data_new_ticket_assign_to_group
+                  )
+                )
+                FROM reply_actions ra
+                WHERE ra.reply_id = rr.id
+              ),
+              '[]'::JSON
+            )
+          )
+        ) FILTER (WHERE rr.id IS NOT NULL),
+        '[]'::JSON
+      ) AS replies
+    FROM ticket_reasons tr
+    LEFT JOIN reply_reasons rr ON rr.reason_id = tr.id
+    GROUP BY tr.id
+    ORDER BY tr.id DESC;
+    `
     );
+
     return res.rows;
   }
 

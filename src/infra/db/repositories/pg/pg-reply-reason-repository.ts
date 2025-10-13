@@ -11,7 +11,11 @@ export class PgReplyReasonsRepository implements ReplyReasonsRepository {
     return PostgresDatabase.getClient();
   }
 
-  async create(data: { reason_id: number; reply: string; comment: boolean }): Promise<ReplyReason> {
+  async create(data: {
+    reason_id: number;
+    reply: string;
+    comment: boolean;
+  }): Promise<ReplyReason> {
     const client = await this.getClient();
     const result = await client.query(
       `INSERT INTO reply_reasons (reason_id, reply, comment)
@@ -27,6 +31,14 @@ export class PgReplyReasonsRepository implements ReplyReasonsRepository {
     const result = await client.query(
       `SELECT * FROM reply_reasons WHERE reason_id = $1 ORDER BY id ASC`,
       [reason_id]
+    );
+    return result.rows;
+  }
+
+  async findAll(): Promise<ReplyReason[]> {
+    const client = await this.getClient();
+    const result = await client.query(
+      `SELECT * FROM reply_reasons ORDER BY id ASC`
     );
     return result.rows;
   }

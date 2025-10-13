@@ -10,4 +10,5 @@ export interface ReplyActionsRepository {
   }): Promise<ReplyAction>;
   findByReplyId(reply_id: number): Promise<ReplyAction[]>;
   delete(id: number): Promise<void>;
+  findAll(): Promise<ReplyAction[]>;
 }

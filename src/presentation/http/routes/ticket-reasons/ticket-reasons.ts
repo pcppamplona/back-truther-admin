@@ -15,6 +15,8 @@ import { deleteReplyController } from "../../controllers/ticket-reasons/replies/
 import { getActionsByReplyController } from "../../controllers/ticket-reasons/reply-actions/get-actions-by-reply-controller";
 import { createReplyActionController } from "../../controllers/ticket-reasons/reply-actions/create-actions-by-reply-controller";
 import { deleteReplyActionController } from "../../controllers/ticket-reasons/reply-actions/delete-actions-by-reply-controller";
+import { getAllReplyActionsController } from "../../controllers/ticket-reasons/reply-actions/get-all-reply-actions-controller";
+import { getAllRepliesController } from "../../controllers/ticket-reasons/replies/get-all-replies-controller";
 
 export async function ticketReasonRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -131,6 +133,18 @@ export async function ticketReasonRoutes(app: FastifyInstance) {
     getRepliesByReasonController
   );
 
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/ticket-reasons/replies",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-replies"],
+        summary: "get all ticket reasons (requires authentication)",
+      },
+    },
+    getAllRepliesController
+  );
+
   app.withTypeProvider<ZodTypeProvider>().post(
     "/ticket-reasons/:reason_id/replies",
     {
@@ -168,6 +182,18 @@ export async function ticketReasonRoutes(app: FastifyInstance) {
       },
     },
     getActionsByReplyController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/ticket-reasons/replies/actions",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-reply-actions"],
+        summary: "get all ticket reasons (requires authentication)",
+      },
+    },
+    getAllReplyActionsController
   );
 
   app.withTypeProvider<ZodTypeProvider>().post(

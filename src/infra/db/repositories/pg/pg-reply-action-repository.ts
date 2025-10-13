@@ -44,6 +44,14 @@ export class PgReplyActionsRepository implements ReplyActionsRepository {
     return result.rows;
   }
 
+  async findAll(): Promise<ReplyAction[]> {
+    const client = await this.getClient();
+    const result = await client.query(
+      `SELECT * FROM reply_actions ORDER BY id ASC`
+    );
+    return result.rows;
+  }
+
   async delete(id: number): Promise<void> {
     const client = await this.getClient();
     await client.query(`DELETE FROM reply_actions WHERE id = $1`, [id]);
