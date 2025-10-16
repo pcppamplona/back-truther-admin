@@ -1,8 +1,5 @@
 import {
   FinalizationReply,
-  FinalizeTicketInput,
-  Reason,
-  ReplyAction,
   Ticket,
   TicketComment,
   TicketData,
@@ -11,6 +8,7 @@ import { TicketsRepository } from "@/domain/tickets/repositories/tickets-reposit
 import { PostgresDatabase } from "../../pg/connection";
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 import { PoolClient } from "pg";
+import { ReplyAction, TicketReason } from "@/domain/reasons/model/ticket-reasons";
 
 export class PgTicketRepository implements TicketsRepository {
   constructor(private client?: PoolClient) {}
@@ -39,7 +37,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async createTicket(data: Ticket): Promise<Ticket> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -62,7 +59,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findAll(): Promise<Ticket[]> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -85,7 +81,6 @@ export class PgTicketRepository implements TicketsRepository {
       sortOrder = "DESC",
     } = params;
 
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     const offset = (page - 1) * limit;
 
@@ -183,7 +178,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findById(id: number): Promise<TicketData | null> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -238,7 +232,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const fields = Object.keys(data);
@@ -262,7 +255,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async createTicketComment(data: TicketComment): Promise<TicketComment> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -278,7 +270,6 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findTicketCommentsById(ticket_id: number): Promise<TicketComment[]> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -291,8 +282,7 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findTicketReasonByCategoryId(category_id: number): Promise<Reason[]> {
-    // const client = await PostgresDatabase.getClient();
+  async findTicketReasonByCategoryId(category_id: number): Promise<TicketReason[]> {
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -311,14 +301,13 @@ export class PgTicketRepository implements TicketsRepository {
         `,
         [category_id]
       );
-      return result.rows as Reason[];
+      return result.rows as TicketReason[];
     } finally {
       if (!this.client) client.release();
     }
   }
 
-  async findTicketReasonById(id: number): Promise<Reason | null> {
-    // const client = await PostgresDatabase.getClient();
+  async findTicketReasonById(id: number): Promise<TicketReason | null> {
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -347,7 +336,6 @@ export class PgTicketRepository implements TicketsRepository {
   async findReplyReasonsByReasonId(
     reason_id: number
   ): Promise<FinalizationReply[]> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
@@ -365,7 +353,6 @@ export class PgTicketRepository implements TicketsRepository {
   async findReplyReasonsActionsByReplyId(
     replyId: number
   ): Promise<ReplyAction[]> {
-    // const client = await PostgresDatabase.getClient();
     const client = await this.getClient();
     try {
       const result = await client.query(
