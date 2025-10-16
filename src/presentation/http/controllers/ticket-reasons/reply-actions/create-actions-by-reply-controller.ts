@@ -11,5 +11,16 @@ export async function createReplyActionController(req: FastifyRequest, reply: Fa
   };
   const useCase = makeCreateReplyActionsUseCase();
   const result = await useCase.execute({ reply_id, ...data });
+
+   await req.audit({
+    action: "crm",
+    message: "User create new ReplyAction",
+    description: `User ${req.user.name} criou uma nova ReplyAction ${result.id}, oriunda do ${result.reply_id} para a ação:${result.action_type_id}`,
+    method: "POST",
+    senderType: "USER",
+    senderId: String(req.user.sub),
+    targetType: "ADMIN",
+    targetId: "1",
+  });
   return reply.status(201).send(result);
 }
