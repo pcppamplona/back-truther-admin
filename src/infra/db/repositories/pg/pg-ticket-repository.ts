@@ -40,8 +40,8 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await this.getClient();
     try {
       const result = await client.query(
-        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status)
-       VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, chain_id_main, chain_id_last)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
         [
           data.created_by,
@@ -50,6 +50,8 @@ export class PgTicketRepository implements TicketsRepository {
           data.assigned_user,
           data.reason_id,
           data.status,
+          data.chain_id_main ?? null,
+          data.chain_id_last ?? null,
         ]
       );
       return result.rows[0] as Ticket;
@@ -212,7 +214,9 @@ export class PgTicketRepository implements TicketsRepository {
           'recipient', tr.recipient
         ) AS reason,
         t.status,
-        t.created_at
+        t.created_at,
+        t.chain_id_main,
+        t.chain_id_last
       FROM tickets t
       JOIN users u ON t.created_by = u.id
       LEFT JOIN clients c ON t.client_id = c.id

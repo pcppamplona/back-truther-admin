@@ -10,6 +10,8 @@ export interface Ticket {
   status: Status;
   created_at?: string;
   finalizate_reply?: number;
+  chain_id_main?: number;
+  chain_id_last?: number;
 }
 
 export type UserTicket = {
@@ -72,4 +74,7 @@ export interface TicketData {
   reason: TicketReason;
   status: Status;
   created_at: string;
+  finalizate_reply?: number;
+  chain_id_main?: number;
+  chain_id_last?: number;
 }
