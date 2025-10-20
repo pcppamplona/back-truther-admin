@@ -3,7 +3,7 @@ import { TicketReason } from "@/domain/reasons/model/ticket-reasons";
 export interface Ticket {
   id?: number;
   created_by: number;
-  client_id: number | null;
+  client_id?: number | null;
   assigned_group: Group | null;
   assigned_user: number | null;
   reason_id: number;
@@ -68,7 +68,7 @@ export interface FinalizeTicketInput {
 export interface TicketData {
   id: number;
   created_by: UserTicket;
-  client: ClientTicket;
+  client: ClientTicket | null;
   assigned_group: string | null;
   assigned_user: UserTicket | null;
   reason: TicketReason;

@@ -17,6 +17,11 @@ import { createReplyActionController } from "../../controllers/ticket-reasons/re
 import { deleteReplyActionController } from "../../controllers/ticket-reasons/reply-actions/delete-actions-by-reply-controller";
 import { getAllReplyActionsController } from "../../controllers/ticket-reasons/reply-actions/get-all-reply-actions-controller";
 import { getAllRepliesController } from "../../controllers/ticket-reasons/replies/get-all-replies-controller";
+import { getReasonCategoriesController } from "../../controllers/ticket-reasons/categories/get-reason-categories-controller";
+import { getReasonCategoryByIdController } from "../../controllers/ticket-reasons/categories/get-reason-category-by-id-controller";
+import { createReasonCategoryController } from "../../controllers/ticket-reasons/categories/create-reason-category-controller";
+import { updateReasonCategoryController } from "../../controllers/ticket-reasons/categories/update-reason-category-controller";
+import { deleteReasonCategoryController } from "../../controllers/ticket-reasons/categories/delete-reason-category-controller";
 
 export async function ticketReasonRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -106,7 +111,7 @@ export async function ticketReasonRoutes(app: FastifyInstance) {
     createActionsTypeController
   );
 
-  app.withTypeProvider<ZodTypeProvider>().delete(   
+  app.withTypeProvider<ZodTypeProvider>().delete(
     "/ticket-reasons/actions-type/:id",
     {
       preHandler: [verifyJwt()],
@@ -220,5 +225,69 @@ export async function ticketReasonRoutes(app: FastifyInstance) {
       },
     },
     deleteReplyActionController
+  );
+
+  // === REASON CATEGORIES ===
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/ticket-reasons/categories",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-categories"],
+        summary:
+          "Listar todas as categorias de ticket reasons (requer autenticação)",
+      },
+    },
+    getReasonCategoriesController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/ticket-reasons/categories/:id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-categories"],
+        summary:
+          "Buscar uma categoria de ticket reason pelo ID (requer autenticação)",
+      },
+    },
+    getReasonCategoryByIdController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().post(
+    "/ticket-reasons/categories",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-categories"],
+        summary: "Criar nova categoria de ticket reason (requer autenticação)",
+      },
+    },
+    createReasonCategoryController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().patch(
+    "/ticket-reasons/categories/:id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-categories"],
+        summary:
+          "Atualizar uma categoria de ticket reason (requer autenticação)",
+      },
+    },
+    updateReasonCategoryController
+  );
+
+  app.withTypeProvider<ZodTypeProvider>().delete(
+    "/ticket-reasons/categories/:id",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["ticket-reason-categories"],
+        summary: "Excluir uma categoria de ticket reason (requer autenticação)",
+      },
+    },
+    deleteReasonCategoryController
   );
 }

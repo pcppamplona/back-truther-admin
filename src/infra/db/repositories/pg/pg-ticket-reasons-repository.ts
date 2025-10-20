@@ -33,7 +33,6 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
           `,
         [
           reason.category_id,
-          reason.type,
           reason.reason,
           reason.expired_at,
           reason.description,
@@ -108,13 +107,6 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
     return { ...reasonRes.rows[0], replies };
   }
 
-  // async findAll() {
-  //   const client = await this.getClient();
-  //   const res = await client.query(
-  //     `SELECT * FROM ticket_reasons ORDER BY id DESC`
-  //   );
-  //   return res.rows;
-  // }
   async findAll(): Promise<TicketReason[]> {
     const client = await this.getClient();
     const res = await client.query(

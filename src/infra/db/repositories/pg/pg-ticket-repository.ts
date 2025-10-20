@@ -8,7 +8,10 @@ import { TicketsRepository } from "@/domain/tickets/repositories/tickets-reposit
 import { PostgresDatabase } from "../../pg/connection";
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 import { PoolClient } from "pg";
-import { ReplyAction, TicketReason } from "@/domain/reasons/model/ticket-reasons";
+import {
+  ReplyAction,
+  TicketReason,
+} from "@/domain/reasons/model/ticket-reasons";
 
 export class PgTicketRepository implements TicketsRepository {
   constructor(private client?: PoolClient) {}
@@ -46,7 +49,7 @@ export class PgTicketRepository implements TicketsRepository {
         [
           data.created_by,
           data.client_id,
-          data.assigned_group,
+          data.assigned_group ?? null,
           data.assigned_user,
           data.reason_id,
           data.status,
@@ -73,7 +76,11 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findPaginated(
-    params: PaginationParams
+    params: PaginationParams & {
+      onlyAssigned?: boolean;
+      assignedGroup?: string;
+      userId?: string;
+    }
   ): Promise<PaginatedResult<Ticket>> {
     const {
       page,
@@ -81,12 +88,14 @@ export class PgTicketRepository implements TicketsRepository {
       search,
       sortBy = "created_at",
       sortOrder = "DESC",
+      onlyAssigned,
+      assignedGroup,
+      userId,
     } = params;
 
     const client = await this.getClient();
     const offset = (page - 1) * limit;
 
-    // Defina os campos que podem ser usados no ORDER BY
     const allowedSortBy = ["id", "status", "created_at"];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
     const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
@@ -105,6 +114,16 @@ export class PgTicketRepository implements TicketsRepository {
         OR tr.description ILIKE $${values.length}
       )
     `);
+    }
+
+    if (onlyAssigned && userId) {
+      values.push(userId);
+      where.push(`t.assigned_user = $${values.length}`);
+    }
+
+    if (assignedGroup) {
+      values.push(assignedGroup);
+      where.push(`t.assigned_group = $${values.length}`);
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
@@ -286,7 +305,9 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findTicketReasonByCategoryId(category_id: number): Promise<TicketReason[]> {
+  async findTicketReasonByCategoryId(
+    category_id: number
+  ): Promise<TicketReason[]> {
     const client = await this.getClient();
     try {
       const result = await client.query(

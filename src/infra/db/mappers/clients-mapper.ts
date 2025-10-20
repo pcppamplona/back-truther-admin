@@ -1,11 +1,11 @@
-import { Clients } from '@/domain/clients/model/clients'
+import { Clients } from "@/domain/clients/model/clients";
 
 export class ClientsMapper {
   static toClients(row: any): Clients | null {
     if (!row) {
-      return null
+      return null;
     }
-    
+
     return {
       id: row.id,
       name: row.name,
@@ -38,15 +38,18 @@ export class ClientsMapper {
       lastIpLogin: row.lastIpLogin,
       retryKyc: row.retryKyc,
       regenerateKyc: row.regenerateKyc,
-      master_instant_pay: row.master_instant_pay
-    }
+      master_instant_pay: row.master_instant_pay,
+      document: row.document || null,
+    };
   }
 
   static toClientsList(rows: any[]): Clients[] {
     if (!rows || rows.length === 0) {
-      return []
+      return [];
     }
-    
-    return rows.map(row => this.toClients(row)).filter((client): client is Clients => client !== null)
+
+    return rows
+      .map((row) => this.toClients(row))
+      .filter((client): client is Clients => client !== null);
   }
 }
