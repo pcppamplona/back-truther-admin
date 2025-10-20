@@ -3,10 +3,19 @@ import type { Clients } from "@/domain/clients/model/clients";
 import type { ClientsRepository } from "@/domain/clients/repositories/clients-repository";
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 import { ClientsMapper } from "../../mappers/clients-mapper";
+import { PoolClient } from "pg";
 
 export class PgClientsRepository implements ClientsRepository {
+
+  constructor(private client?: PoolClient) {}
+
+  private async getClient(): Promise<PoolClient> {
+    if (this.client) return this.client;       
+    return PostgresDatabase.getClient();      
+  }
+
   async findAll(): Promise<Clients[]> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `
@@ -26,7 +35,7 @@ export class PgClientsRepository implements ClientsRepository {
   }
 
   async findByUuid(uuid: string): Promise<Clients | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM clients WHERE uuid = $1 LIMIT 1`,
@@ -40,7 +49,7 @@ export class PgClientsRepository implements ClientsRepository {
   }
 
   async findById(id: number): Promise<Clients | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM clients WHERE id = $1 LIMIT 1`,
@@ -63,7 +72,7 @@ export class PgClientsRepository implements ClientsRepository {
       sortBy = "created_at",
       sortOrder = "DESC",
     } = params;
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
 
     const offset = (page - 1) * limit;
 

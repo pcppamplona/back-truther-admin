@@ -8,6 +8,7 @@ declare module 'fastify' {
   interface FastifyRequest {
     correlationId?: string // ID único gerado para cada req
     startTime?: [number, number] // valor atribuído no runtime -> process.hrtime()
+    pgClient?: PoolClient // client do postfress por request
   }
 }
 
