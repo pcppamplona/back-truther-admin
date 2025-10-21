@@ -3,7 +3,6 @@ import { Group, TypeRecipient } from "@/domain/tickets/model/tickets";
 export type TicketReason  = {
   id: number;
   category_id: number;
-  type: string;
   reason: string;
   expired_at: number;
   description: string;
@@ -22,6 +21,7 @@ export interface ActionsType {
   id: number;
   type: string;
   created_at?: string;
+  description_action?: string;
 }
 
 export interface ReplyAction {
@@ -31,4 +31,10 @@ export interface ReplyAction {
   data_email: string | null;
   data_new_ticket_reason_id: number | null;
   data_new_ticket_assign_to_group: Group | null;
+}
+
+export interface ReasonCategories {
+  id?: number;
+  type: string;
+  description: string;
 }

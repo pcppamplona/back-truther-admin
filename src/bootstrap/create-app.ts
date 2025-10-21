@@ -14,11 +14,14 @@ import jwtPlugin from "@/infra/plugins/jwt";
 import swaggerAuth from "@/infra/plugins/swagger-auth";
 import auditPlugin from "@/infra/plugins/audit";
 import { errorHandler } from "@/presentation/http/middlewares/error-handler";
-
 import { LoggerInterceptor } from "../presentation/http/interceptors/logger-interceptor";
 import { registerRoutes } from "../presentation/http/routes";
+import { PostgresDatabase } from "@/infra/db/pg/connection";
+import { pgClientPerRequest } from "@/infra/plugins/pg-client-per-request";
 
 export async function createApp() {
+  await PostgresDatabase.connect(env.DATABASE_URL);
+  
   const app = fastify({
     trustProxy: true,
   }).withTypeProvider<ZodTypeProvider>();
@@ -37,6 +40,7 @@ export async function createApp() {
   await app.register(jwtPlugin);
   await app.register(swaggerAuth);
   await app.register(auditPlugin);
+  await app.register(pgClientPerRequest);
 
   await app.register(fastifySwagger, {
     openapi: {

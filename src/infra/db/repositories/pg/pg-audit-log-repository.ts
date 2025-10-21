@@ -1,12 +1,23 @@
-import { PostgresDatabase } from '../../pg/connection'
-import { AuditLog } from '@/domain/audit-log/model/audit-log'
-import { AuditLogRepository, CreateAuditLogData } from '@/domain/audit-log/repositories/audit-log-repository'
-import { PaginatedResult, PaginationParams } from '@/shared/pagination'
-import { AuditLogMapper } from '../../mappers/audit-log-mapper'
+import { PostgresDatabase } from "../../pg/connection";
+import { AuditLog } from "@/domain/audit-log/model/audit-log";
+import {
+  AuditLogRepository,
+  CreateAuditLogData,
+} from "@/domain/audit-log/repositories/audit-log-repository";
+import { PaginatedResult, PaginationParams } from "@/shared/pagination";
+import { AuditLogMapper } from "../../mappers/audit-log-mapper";
+import { PoolClient } from "pg";
 
 export class PgAuditLogRepository implements AuditLogRepository {
+  constructor(private client?: PoolClient) {}
+
+  private async getClient(): Promise<PoolClient> {
+    if (this.client) return this.client;
+    return PostgresDatabase.getClient();
+  }
+
   async create(data: CreateAuditLogData): Promise<AuditLog> {
-    const client = await PostgresDatabase.getClient()
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `INSERT INTO audit_logs (
@@ -27,38 +38,38 @@ export class PgAuditLogRepository implements AuditLogRepository {
           data.senderType,
           data.senderId,
           data.targetType,
-          data.targetId
+          data.targetId,
         ]
-      )
-      return AuditLogMapper.toAuditLog(result.rows[0])!
+      );
+      return AuditLogMapper.toAuditLog(result.rows[0])!;
     } finally {
-      client.release()
+      client.release();
     }
   }
 
   async findAll(): Promise<AuditLog[]> {
-    const client = await PostgresDatabase.getClient()
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM audit_logs ORDER BY created_at DESC`
-      )
-      return AuditLogMapper.toAuditLogList(result.rows)
+      );
+      return AuditLogMapper.toAuditLogList(result.rows);
     } finally {
-      client.release()
+      client.release();
     }
   }
 
   async findById(id: number): Promise<AuditLog | null> {
-    const client = await PostgresDatabase.getClient()
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM audit_logs WHERE id = $1 LIMIT 1`,
         [id]
-      )
-      if (result.rowCount === 0) return null
-      return AuditLogMapper.toAuditLog(result.rows[0])
+      );
+      if (result.rowCount === 0) return null;
+      return AuditLogMapper.toAuditLog(result.rows[0]);
     } finally {
-      client.release()
+      client.release();
     }
   }
 
@@ -72,7 +83,7 @@ export class PgAuditLogRepository implements AuditLogRepository {
       sortBy = "created_at",
       sortOrder = "DESC",
     } = params;
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
 
     const offset = (page - 1) * limit;
 
@@ -85,7 +96,7 @@ export class PgAuditLogRepository implements AuditLogRepository {
       "sender_type",
       "sender_id",
       "target_type",
-      "target_id"
+      "target_id",
     ];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
 
@@ -124,10 +135,10 @@ export class PgAuditLogRepository implements AuditLogRepository {
         data: AuditLogMapper.toAuditLogList(result.rows),
         total: Number(countResult.rows[0].total),
         page,
-        limit
+        limit,
       };
     } finally {
-      client.release()
+      client.release();
     }
   }
 }

@@ -7,10 +7,17 @@ import type {
 
 import { PostgresDatabase } from "../../pg/connection";
 import { AdminUserMapper } from "../../mappers/admin-user-mapper";
+import { PoolClient } from "pg";
 
 export class PgUserRepository implements UsersRepository {
+  constructor(private client?: PoolClient) {}
+
+  private async getClient(): Promise<PoolClient> {
+    if (this.client) return this.client;
+    return PostgresDatabase.getClient();
+  }
   async findByName(username: string): Promise<User | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
 
     try {
       const result = await client.query(
@@ -38,7 +45,7 @@ export class PgUserRepository implements UsersRepository {
   }
 
   async findAll(): Promise<User[]> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `SELECT
@@ -66,7 +73,7 @@ export class PgUserRepository implements UsersRepository {
     params: PaginationParams
   ): Promise<PaginatedResult<User>> {
     const { page, limit, search, sortBy = "id", sortOrder = "ASC" } = params;
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
 
     const offset = (page - 1) * limit;
 
@@ -136,7 +143,7 @@ export class PgUserRepository implements UsersRepository {
   }
 
   async findById(id: number): Promise<User | null> {
-    const client = await PostgresDatabase.getClient();
+    const client = await this.getClient();
 
     try {
       const result = await client.query<User>(

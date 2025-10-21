@@ -25,3 +25,5 @@ export interface TicketsRepository {
   findReplyReasonsByReasonId(reason_id: number): Promise<FinalizationReply[]>;
   findReplyReasonsActionsByReplyId(reply_id: number): Promise<ReplyAction[]>;
 }
+
+//

@@ -3,13 +3,15 @@ import { TicketReason } from "@/domain/reasons/model/ticket-reasons";
 export interface Ticket {
   id?: number;
   created_by: number;
-  client_id: number | null;
+  client_id?: number | null;
   assigned_group: Group | null;
   assigned_user: number | null;
   reason_id: number;
   status: Status;
   created_at?: string;
   finalizate_reply?: number;
+  chain_id_main?: number;
+  chain_id_last?: number;
 }
 
 export type UserTicket = {
@@ -66,10 +68,13 @@ export interface FinalizeTicketInput {
 export interface TicketData {
   id: number;
   created_by: UserTicket;
-  client: ClientTicket;
+  client: ClientTicket | null;
   assigned_group: string | null;
   assigned_user: UserTicket | null;
   reason: TicketReason;
   status: Status;
   created_at: string;
+  finalizate_reply?: number;
+  chain_id_main?: number;
+  chain_id_last?: number;
 }

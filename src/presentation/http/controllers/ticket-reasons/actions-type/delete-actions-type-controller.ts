@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function deleteActionsTypeController(req: FastifyRequest, reply: FastifyReply) {
   const { id } = req.params as { id: number };
-  const useCase = makeDeleteActionsTypeUseCase();
+  const useCase = makeDeleteActionsTypeUseCase(req.pgClient);
   await useCase.execute(id);
   return reply.status(204).send();
 }

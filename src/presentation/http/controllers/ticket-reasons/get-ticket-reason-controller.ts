@@ -3,7 +3,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 
 export async function getTicketReasonController(req: FastifyRequest, reply: FastifyReply) {
   const { id } = req.params as { id: number };
-  const useCase = makeGetTicketReasonByIdUseCase();
+  const useCase = makeGetTicketReasonByIdUseCase(req.pgClient);
   
   try {
     const reason = await useCase.execute(id);

@@ -6,9 +6,20 @@ export async function createTicketReasonController(
   reply: FastifyReply
 ) {
   const { body } = req as any;
-  const useCase = makeCreateTicketReasonUseCase();
+  const useCase = makeCreateTicketReasonUseCase(req.pgClient);
 
   const reason = await useCase.execute(body, body.replies);
+
+  await req.audit({
+    action: "crm",
+    message: "User create new Reason",
+    description: `User ${req.user.name} criou um novo reason ${reason?.id}:${reason?.reason}`,
+    method: "POST",
+    senderType: "USER",
+    senderId: String(req.user.sub),
+    targetType: "ADMIN",
+    targetId: "1",
+  });
 
   return reply.status(201).send(reason);
 }

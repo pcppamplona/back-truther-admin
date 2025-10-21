@@ -37,23 +37,15 @@ export class FinalizeTicketUseCase {
         );
 
         if (replyActions && replyActions.length > 0) {
-        const executor = new ActionExecutor(txRepo);
-        for (const action of replyActions) {
-          await executor.execute(
-            action,
-            { ...data, audit: req?.audit },
-            ticket
-          );
+          const executor = new ActionExecutor(txRepo);
+          for (const action of replyActions) {
+            await executor.execute(
+              action,
+              { ...data, audit: req?.audit },
+              ticket
+            );
+          }
         }
-      }
-        // const executor = new ActionExecutor(txRepo);
-        // for (const action of replyActions) {
-        //   await executor.execute(
-        //     action,
-        //     { ...data, audit: req?.audit },
-        //     ticket
-        //   );
-        // }
 
         const updated = await txRepo.updateTicket(data.ticket_id, {
           status: "FINALIZADO",

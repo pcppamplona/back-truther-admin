@@ -11,7 +11,7 @@ export async function finalizeTicketController(
     comment?: string;
   };
 
-  const finalizeTicketUseCase = makeFinalizeTicket();
+  const finalizeTicketUseCase = makeFinalizeTicket(req.pgClient);
 
   const user = {
     id: req.user.sub,

@@ -1,6 +1,5 @@
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 import {
- 
   FinalizeTicketInput,
   TicketData,
 } from "@/domain/tickets/model/tickets";
@@ -31,7 +30,9 @@ export class ActionExecutor {
 
   private async handleSendEmail(action: ReplyAction, ticket: TicketData) {
     if (!action.data_email) {
-      throw new Error(`[send_email] Nenhum e-mail definido para a ação ${action.id}`);
+      throw new Error(
+        `[send_email] Nenhum e-mail definido para a ação ${action.id}`
+      );
     }
   }
 
@@ -41,15 +42,22 @@ export class ActionExecutor {
     ticket: TicketData
   ) {
     if (!action.data_new_ticket_reason_id) {
-      throw new Error(`[new_ticket] Nenhum reason_id informado para a ação ${action.id}`);
+      throw new Error(
+        `[new_ticket] Nenhum reason id informado para a ação ${action.id}`
+      );
     }
 
     const reason = await this.repo.findTicketReasonById(
       action.data_new_ticket_reason_id
     );
     if (!reason) {
-      throw new Error(`[new_ticket] Reason ${action.data_new_ticket_reason_id} não encontrado`);
+      throw new Error(
+        `[new_ticket] Reason ${action.data_new_ticket_reason_id} não encontrado`
+      );
     }
+
+    const chain_id_main = ticket.chain_id_main ?? ticket.id;
+    const chain_id_last = ticket.id;
 
     const newTicket = await this.repo.createTicket({
       created_by: data.user.id,
@@ -58,10 +66,14 @@ export class ActionExecutor {
       assigned_user: null,
       reason_id: reason.id,
       status: "PENDENTE",
+      chain_id_main,
+      chain_id_last,
     });
 
     if (!newTicket) {
-      throw new Error(`[new_ticket] Falha ao criar o ticket derivado a partir do ticket ${ticket.id}`);
+      throw new Error(
+        `[new_ticket] Falha ao criar o ticket derivado a partir do ticket ${ticket.id}`
+      );
     }
 
     if (data.audit) {
@@ -87,7 +99,9 @@ export class ActionExecutor {
     });
 
     if (!comment) {
-      throw new Error(`[new_ticket] Falha ao criar comentário automático para o ticket ${newTicket.id}`);
+      throw new Error(
+        `[new_ticket] Falha ao criar comentário automático para o ticket ${newTicket.id}`
+      );
     }
 
     if (data.audit) {

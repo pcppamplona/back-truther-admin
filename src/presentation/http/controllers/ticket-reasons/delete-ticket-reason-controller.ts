@@ -3,7 +3,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 
 export async function deleteTicketReasonController(req: FastifyRequest, reply: FastifyReply) {
   const { id } = req.params as { id: number };
-  const useCase = makeDeleteTicketReasonUseCase();
+  const useCase = makeDeleteTicketReasonUseCase(req.pgClient);
   
   try {
     await useCase.execute(id);

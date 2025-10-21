@@ -8,7 +8,10 @@ import { TicketsRepository } from "@/domain/tickets/repositories/tickets-reposit
 import { PostgresDatabase } from "../../pg/connection";
 import { PaginatedResult, PaginationParams } from "@/shared/pagination";
 import { PoolClient } from "pg";
-import { ReplyAction, TicketReason } from "@/domain/reasons/model/ticket-reasons";
+import {
+  ReplyAction,
+  TicketReason,
+} from "@/domain/reasons/model/ticket-reasons";
 
 export class PgTicketRepository implements TicketsRepository {
   constructor(private client?: PoolClient) {}
@@ -40,16 +43,18 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await this.getClient();
     try {
       const result = await client.query(
-        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status)
-       VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, chain_id_main, chain_id_last)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
         [
           data.created_by,
           data.client_id,
-          data.assigned_group,
+          data.assigned_group ?? null,
           data.assigned_user,
           data.reason_id,
           data.status,
+          data.chain_id_main ?? null,
+          data.chain_id_last ?? null,
         ]
       );
       return result.rows[0] as Ticket;
@@ -71,7 +76,11 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findPaginated(
-    params: PaginationParams
+    params: PaginationParams & {
+      onlyAssigned?: boolean;
+      assignedGroup?: string;
+      userId?: string;
+    }
   ): Promise<PaginatedResult<Ticket>> {
     const {
       page,
@@ -79,12 +88,14 @@ export class PgTicketRepository implements TicketsRepository {
       search,
       sortBy = "created_at",
       sortOrder = "DESC",
+      onlyAssigned,
+      assignedGroup,
+      userId,
     } = params;
 
     const client = await this.getClient();
     const offset = (page - 1) * limit;
 
-    // Defina os campos que podem ser usados no ORDER BY
     const allowedSortBy = ["id", "status", "created_at"];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
     const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
@@ -103,6 +114,16 @@ export class PgTicketRepository implements TicketsRepository {
         OR tr.description ILIKE $${values.length}
       )
     `);
+    }
+
+    if (onlyAssigned && userId) {
+      values.push(userId);
+      where.push(`t.assigned_user = $${values.length}`);
+    }
+
+    if (assignedGroup) {
+      values.push(assignedGroup);
+      where.push(`t.assigned_group = $${values.length}`);
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
@@ -131,7 +152,7 @@ export class PgTicketRepository implements TicketsRepository {
         json_build_object(
           'id', tr.id,
           'category_id', tr.category_id,
-          'type', tr.type,
+          'type', tr.type_recipient, -- ← corrigido
           'reason', tr.reason,
           'description', tr.description,
           'expired_at', tr.expired_at,
@@ -203,8 +224,8 @@ export class PgTicketRepository implements TicketsRepository {
         ) AS assigned_user,
         json_build_object(
           'id', tr.id,
-          'categoryId', tr.category_id,
-          'type', tr.type,
+          'category_id', tr.category_id,
+          'type', tr.type_recipient, -- ← corrigido
           'reason', tr.reason,
           'description', tr.description,
           'expired_at', tr.expired_at,
@@ -212,7 +233,9 @@ export class PgTicketRepository implements TicketsRepository {
           'recipient', tr.recipient
         ) AS reason,
         t.status,
-        t.created_at
+        t.created_at,
+        t.chain_id_main,
+        t.chain_id_last
       FROM tickets t
       JOIN users u ON t.created_by = u.id
       LEFT JOIN clients c ON t.client_id = c.id
@@ -282,7 +305,9 @@ export class PgTicketRepository implements TicketsRepository {
     }
   }
 
-  async findTicketReasonByCategoryId(category_id: number): Promise<TicketReason[]> {
+  async findTicketReasonByCategoryId(
+    category_id: number
+  ): Promise<TicketReason[]> {
     const client = await this.getClient();
     try {
       const result = await client.query(
