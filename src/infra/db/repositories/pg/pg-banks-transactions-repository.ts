@@ -50,7 +50,7 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     const safeSortBy = allowedSortBy.has(sortBy) ? sortBy : 'px."createdAt"'
     const safeSortOrder = sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
-    const orderByColumn = safeSortBy === 'px."amount"' ? `REPLACE(px."amount", ',', '.')::numeric` : safeSortBy
+    const orderByColumn = safeSortBy === 'px."amount"' ? `px."amount"` : safeSortBy
 
     const where: string[] = []
     const values: unknown[] = []
@@ -81,14 +81,13 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     pushWhere('px."status" =', status_px)
     pushWhere('ob.status =', status_bk)
-
-    if (min_amount !== undefined) {
+    if (min_amount !== undefined) {//Amount na pixCashout é numeric
       values.push(min_amount)
-      where.push(`REPLACE(px."amount", ',', '.')::numeric >= $${values.length}`)
+      where.push(`px."amount" >= $${values.length}`)
     }
-    if (max_amount !== undefined) {
+    if (max_amount !== undefined) {//Amount na pixCashout é numeric
       values.push(max_amount)
-      where.push(`REPLACE(px."amount", ',', '.')::numeric <= $${values.length}`)
+      where.push(`px."amount" <= $${values.length}`)
     }
 
     if (created_after) {
@@ -150,6 +149,8 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
         page,
         limit,
       }
+    } catch(ex){
+      console.log(ex)
     } finally {
       client.release()
     }
@@ -232,11 +233,11 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
     pushWhere('ob.status =', status_blockchain)
     pushWhere('ob."typeIn" =', typeIn)
 
-    if (min_amount !== undefined) {
+    if (min_amount !== undefined) {//Amount na pixIn é varchar
       values.push(min_amount)
       where.push(`REPLACE(px."amount", ',', '.')::numeric >= $${values.length}`)
     }
-    if (max_amount !== undefined) {
+    if (max_amount !== undefined) {//Amount na pixIn é varchar
       values.push(max_amount)
       where.push(`REPLACE(px."amount", ',', '.')::numeric <= $${values.length}`)
     }
