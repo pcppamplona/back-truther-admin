@@ -4,7 +4,7 @@ import { makeListClientsPaginatedUseCase } from "@/application/factories/clients
 export async function listClientsPaginatedController(req: FastifyRequest, reply: FastifyReply) {
   const { page = "1", limit = "100", search, sortBy, sortOrder } = req.query as any
 
-  const useCase = makeListClientsPaginatedUseCase()
+  const useCase = makeListClientsPaginatedUseCase(req.pgClient)
   const result = await useCase.execute({
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),

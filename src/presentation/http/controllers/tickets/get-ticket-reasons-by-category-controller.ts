@@ -7,7 +7,7 @@ export async function getTicketReasonsByCategoryController(
 ) {
    const { category_id} = req.params as { category_id: number };
 
-  const useCase = makeGetTicketReasonsByCategoryUseCase();
+  const useCase = makeGetTicketReasonsByCategoryUseCase(req.pgClient);
   const ticket = await useCase.execute(category_id);
 
   return reply.status(200).send(ticket);

@@ -14,7 +14,7 @@ export async function getUserInfoByUserIdController(
   if (isNaN(user_id)) {
     return reply.status(400).send({ message: 'Invalid user_id parameter' })
   }
-  const useCase = makeGetUserInfoByUserIdUseCase()
+  const useCase = makeGetUserInfoByUserIdUseCase(request.pgClient)
   const userInfo = await useCase.execute(user_id)
   if (!userInfo) {
     return reply.status(404).send({ message: 'User info not found' })

@@ -8,7 +8,7 @@ export async function createTicketCommentController(
 ) {
   const { body } = req as { body: TicketComment};
 
-  const useCase = makeCreateTicketCommentUseCase();
+  const useCase = makeCreateTicketCommentUseCase(req.pgClient);
   const ticket = await useCase.execute(body as any);
 
   await req.audit({

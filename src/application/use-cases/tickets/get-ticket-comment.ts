@@ -1,4 +1,4 @@
-import { Ticket, TicketComment } from "@/domain/tickets/model/tickets";
+import { TicketComment } from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 
 export class GetTicketCommentUseCase {

@@ -1,4 +1,4 @@
-import { ReplyAction } from "@/domain/tickets/model/tickets";
+import { ReplyAction } from "@/domain/reasons/model/ticket-reasons";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 
 export class GetTicketReasonsReplyActionsUseCase {

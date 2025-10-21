@@ -31,4 +31,5 @@ export interface Clients {
   retryKyc: number
   regenerateKyc: boolean
   master_instant_pay: boolean
+  document: string | null
 }

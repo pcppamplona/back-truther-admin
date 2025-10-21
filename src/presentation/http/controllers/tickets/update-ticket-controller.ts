@@ -8,7 +8,7 @@ export async function updateTicketController(
   const { id } = req.params as { id: number };
   const { body } = req;
 
-  const useCase = makeUpdateTicketUseCase();
+  const useCase = makeUpdateTicketUseCase(req.pgClient);
   const ticket = await useCase.execute(id, body as any);
 
   await req.audit({

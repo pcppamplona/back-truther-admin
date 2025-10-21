@@ -5,7 +5,7 @@ export async function getUsersController(
   req: FastifyRequest,
   reply: FastifyReply
 ) {
-  const getAllUsersUseCase = makeGetAllUsersUseCase()
+  const getAllUsersUseCase = makeGetAllUsersUseCase(req.pgClient)
   const users = await getAllUsersUseCase.execute()
 
   return reply.status(200).send(users)

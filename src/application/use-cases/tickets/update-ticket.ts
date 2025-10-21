@@ -1,4 +1,3 @@
-// application/use-cases/tickets/update-ticket.ts
 import { Ticket } from "@/domain/tickets/model/tickets";
 import { TicketsRepository } from "@/domain/tickets/repositories/tickets-repository";
 
