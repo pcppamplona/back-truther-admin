@@ -4,7 +4,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 export async function deleteReasonCategoryController(req: FastifyRequest, reply: FastifyReply) {
   const { id } = req.params as { id: number };
 
-  const useCase = makeDeleteReasonCategoryUseCase();
+  const useCase = makeDeleteReasonCategoryUseCase(req.pgClient);
   await useCase.execute(id);
 
   await req.audit({

@@ -30,7 +30,7 @@ export class PgClientsRepository implements ClientsRepository {
 
       return ClientsMapper.toClientsList(result.rows);
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
@@ -44,7 +44,7 @@ export class PgClientsRepository implements ClientsRepository {
       if (result.rowCount === 0) return null;
       return ClientsMapper.toClients(result.rows[0]);
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
@@ -58,7 +58,7 @@ export class PgClientsRepository implements ClientsRepository {
       if (result.rowCount === 0) return null;
       return ClientsMapper.toClients(result.rows[0]);
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 
@@ -154,13 +154,13 @@ export class PgClientsRepository implements ClientsRepository {
       const countResult = await client.query(countQuery, values);
 
       return {
-        data: ClientsMapper.toClientsList(result.rows), // agora inclui 'document'
+        data: ClientsMapper.toClientsList(result.rows),
         total: Number(countResult.rows[0].total),
         page,
         limit,
       };
     } finally {
-      client.release();
+      if (!this.client) client.release();
     }
   }
 }

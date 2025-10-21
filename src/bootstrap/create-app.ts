@@ -40,7 +40,7 @@ export async function createApp() {
   await app.register(jwtPlugin);
   await app.register(swaggerAuth);
   await app.register(auditPlugin);
-   await app.register(pgClientPerRequest);
+  await app.register(pgClientPerRequest);
 
   await app.register(fastifySwagger, {
     openapi: {

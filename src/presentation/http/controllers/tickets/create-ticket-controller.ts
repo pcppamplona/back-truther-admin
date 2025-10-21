@@ -7,7 +7,7 @@ export async function createTicketController(
   reply: FastifyReply
 ) {
   const { body } = req as { body: Ticket };
-  const useCase = makeCreateTicketUseCase();
+  const useCase = makeCreateTicketUseCase(req.pgClient);
   const ticket = await useCase.execute(body as any);
   
   await req.audit({

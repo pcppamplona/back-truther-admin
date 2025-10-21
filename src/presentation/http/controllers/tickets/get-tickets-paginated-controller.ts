@@ -14,7 +14,7 @@ export async function GetTicketsPaginatedController(req: FastifyRequest, reply: 
 
   const userId = req.user.sub;
 
-  const useCase = makeGetTicketsPaginatedUseCase();
+  const useCase = makeGetTicketsPaginatedUseCase(req.pgClient);
   const result = await useCase.execute({
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),

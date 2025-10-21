@@ -11,7 +11,7 @@ export async function getUserInfoByDocumentController(
   reply: FastifyReply,
 ) {
   const { document } = request.params
-  const useCase = makeGetUserInfoByDocumentUseCase()
+  const useCase = makeGetUserInfoByDocumentUseCase(request.pgClient)
   const userInfo = await useCase.execute(document)
   if (!userInfo) {
     return reply.status(404).send({ message: 'User info not found' })

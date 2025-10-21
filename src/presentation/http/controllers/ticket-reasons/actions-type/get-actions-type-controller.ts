@@ -2,7 +2,7 @@ import { makeGetActionsTypeUseCase } from "@/application/factories/ticket-reason
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function getActionsTypeController(req: FastifyRequest, reply: FastifyReply) {
-  const useCase = makeGetActionsTypeUseCase()
+  const useCase = makeGetActionsTypeUseCase(req.pgClient)
   const actions = await useCase.execute();
   return reply.status(200).send(actions);
 }

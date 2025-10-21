@@ -7,7 +7,7 @@ export async function getTicketCommentController(
 ) {
   const { ticket_id } = req.params as { ticket_id: number };
   
-  const useCase = makeGetTicketCommentUseCase();
+  const useCase = makeGetTicketCommentUseCase(req.pgClient);
   const ticket = await useCase.execute(ticket_id);
 
   return reply.status(200).send(ticket);

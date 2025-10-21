@@ -2,7 +2,7 @@ import { makeGetAllTicketReasonUseCase } from "@/application/factories/ticket-re
 import { FastifyRequest, FastifyReply } from "fastify";
 
 export async function getAllTicketReasonController(req: FastifyRequest, reply: FastifyReply) {
-  const useCase = makeGetAllTicketReasonUseCase();
+  const useCase = makeGetAllTicketReasonUseCase(req.pgClient);
   
   try {
     const reasons = await useCase.execute();

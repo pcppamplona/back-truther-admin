@@ -5,7 +5,7 @@ export async function updateReasonCategoryController(req: FastifyRequest, reply:
   const { id } = req.params as { id: number };
   const { type, description } = req.body as Partial<{ type: string; description: string }>;
 
-  const useCase = makeUpdateReasonCategoryUseCase();
+  const useCase = makeUpdateReasonCategoryUseCase(req.pgClient);
   const result = await useCase.execute(id, { type, description });
 
   await req.audit({

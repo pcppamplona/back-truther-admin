@@ -6,7 +6,7 @@ export async function createTicketReasonController(
   reply: FastifyReply
 ) {
   const { body } = req as any;
-  const useCase = makeCreateTicketReasonUseCase();
+  const useCase = makeCreateTicketReasonUseCase(req.pgClient);
 
   const reason = await useCase.execute(body, body.replies);
 

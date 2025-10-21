@@ -7,7 +7,7 @@ export async function getMeController(
 ) {
   const userId = request.user.sub
 
-  const getMeUseCase = makeGetMeUseCase()
+  const getMeUseCase = makeGetMeUseCase(request.pgClient)
   const user = await getMeUseCase.execute({ userId: Number(userId) })
 
   return reply.status(200).send(user)

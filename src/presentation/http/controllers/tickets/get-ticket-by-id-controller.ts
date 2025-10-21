@@ -7,7 +7,7 @@ export async function getTicketByIdController(
 ) {
    const { id } = req.params as { id: number };
 
-  const useCase = makeGetTicketByIdUseCase();
+  const useCase = makeGetTicketByIdUseCase(req.pgClient);
   const ticket = await useCase.execute(id);
 
   return reply.status(200).send(ticket);

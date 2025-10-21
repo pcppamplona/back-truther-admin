@@ -152,7 +152,7 @@ export class PgTicketRepository implements TicketsRepository {
         json_build_object(
           'id', tr.id,
           'category_id', tr.category_id,
-          'type', tr.type,
+          'type', tr.type_recipient, -- ← corrigido
           'reason', tr.reason,
           'description', tr.description,
           'expired_at', tr.expired_at,
@@ -224,8 +224,8 @@ export class PgTicketRepository implements TicketsRepository {
         ) AS assigned_user,
         json_build_object(
           'id', tr.id,
-          'categoryId', tr.category_id,
-          'type', tr.type,
+          'category_id', tr.category_id,
+          'type', tr.type_recipient, -- ← corrigido
           'reason', tr.reason,
           'description', tr.description,
           'expired_at', tr.expired_at,

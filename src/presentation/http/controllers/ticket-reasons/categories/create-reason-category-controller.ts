@@ -4,7 +4,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 export async function createReasonCategoryController(req: FastifyRequest, reply: FastifyReply) {
   const { type, description } = req.body as { type: string; description: string };
 
-  const useCase = makeCreateReasonCategoryUseCase();
+  const useCase = makeCreateReasonCategoryUseCase(req.pgClient);
   const result = await useCase.execute({ type, description });
 
   await req.audit({

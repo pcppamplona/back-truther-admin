@@ -6,7 +6,7 @@ export async function getClientByUuidController(
   reply: FastifyReply,
 ) {
   const { uuid } = request.params as { uuid: string}
-  const useCase = makeGetClientByUuidUseCase()
+  const useCase = makeGetClientByUuidUseCase(request.pgClient)
   const client = await useCase.execute(uuid)
   if (!client) {
     return reply.status(404).send({ message: 'Client not found' })

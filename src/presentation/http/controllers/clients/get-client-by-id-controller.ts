@@ -6,7 +6,7 @@ export async function getClientByIdController(
   reply: FastifyReply
 ) {
   const { id } = request.params as { id: number }
-  const useCase = makeGetClientByIdUseCase()
+  const useCase = makeGetClientByIdUseCase(request.pgClient)
 
   const client = await useCase.execute(Number(id))
 

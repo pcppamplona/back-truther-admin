@@ -4,7 +4,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 export async function createReplyController(req: FastifyRequest, reply: FastifyReply) {
   const { reason_id } = req.params as { reason_id: number };
   const { reply: text, comment } = req.body as { reply: string; comment: boolean };
-  const useCase = makeCreateReplyUseCase();
+  const useCase = makeCreateReplyUseCase(req.pgClient);
   const result = await useCase.execute({ reason_id, reply: text, comment });
 
   await req.audit({
