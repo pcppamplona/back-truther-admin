@@ -16,4 +16,5 @@ export interface PixInTransaction {
   msg_error_bank: string | null
   createdAt: string | null
   typeIn: string | null
+  token_symbol: string | null
 }

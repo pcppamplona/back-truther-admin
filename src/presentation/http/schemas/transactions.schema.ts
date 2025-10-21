@@ -52,6 +52,7 @@ export const pixOutItemSchema = z.object({
   receiver_document: z.string().nullable(),
   receiver_name: z.string().nullable(),
   pixKey: z.string().nullable(),
+  token_symbol: z.string().nullable(),
 })
 
 export const pixInItemSchema = z.object({
@@ -72,6 +73,7 @@ export const pixInItemSchema = z.object({
   msg_error_bank: z.string().nullable(),
   createdAt: z.string().nullable(),
   typeIn: z.string().nullable(),
+  token_symbol: z.string().nullable(),
 })
 
 export const paginatedPixOutResponseSchema = z.object({

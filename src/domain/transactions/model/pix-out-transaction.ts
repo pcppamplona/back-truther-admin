@@ -12,4 +12,5 @@ export interface PixOutTransaction {
   receiverDocument: string | null
   receiverName: string | null
   pixKey: string | null
+  token_symbol: string | null
 }

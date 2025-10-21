@@ -50,6 +50,7 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     const safeSortBy = allowedSortBy.has(sortBy) ? sortBy : 'px."createdAt"'
     const safeSortOrder = sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
+    const orderByColumn = safeSortBy === 'px."amount"' ? `REPLACE(px."amount", ',', '.')::numeric` : safeSortBy
 
     const where: string[] = []
     const values: unknown[] = []
@@ -83,11 +84,11 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     if (min_amount !== undefined) {
       values.push(min_amount)
-      where.push(`px."amount" >= $${values.length}`)
+      where.push(`REPLACE(px."amount", ',', '.')::numeric >= $${values.length}`)
     }
     if (max_amount !== undefined) {
       values.push(max_amount)
-      where.push(`px."amount" <= $${values.length}`)
+      where.push(`REPLACE(px."amount", ',', '.')::numeric <= $${values.length}`)
     }
 
     if (created_after) {
@@ -115,14 +116,16 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
         px."createdAt"::text AS date_op,
         px."receiverDocument" as receiver_document,
         px."receiverName" as receiver_name,
-        px."pixKey"
+        px."pixKey",
+        t.symbol AS token_symbol
       FROM "orderBuy" AS ob
       LEFT JOIN "pixCashout" AS px ON px."orderId" = ob."id"
       LEFT JOIN "aclWallets" AS aw ON ob."sender" = aw.wallet
+      LEFT JOIN "tokens" AS t ON t.id = ob."tokensId"
     `
 
     const orderLimit = `
-      ORDER BY ${safeSortBy} ${safeSortOrder}
+      ORDER BY ${orderByColumn} ${safeSortOrder}
       LIMIT $${values.length + 1}
       OFFSET $${values.length + 2}
     `
@@ -196,6 +199,7 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     const safeSortBy = allowedSortBy.has(sortBy) ? sortBy : 'px."createdAt"'
     const safeSortOrder = sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
+    const orderByColumn = safeSortBy === 'px."amount"' ? `REPLACE(px."amount", ',', '.')::numeric` : safeSortBy
 
     const where: string[] = []
     const values: unknown[] = []
@@ -230,11 +234,11 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
 
     if (min_amount !== undefined) {
       values.push(min_amount)
-      where.push(`px."amount" >= $${values.length}`)
+      where.push(`REPLACE(px."amount", ',', '.')::numeric >= $${values.length}`)
     }
     if (max_amount !== undefined) {
       values.push(max_amount)
-      where.push(`px."amount" <= $${values.length}`)
+      where.push(`REPLACE(px."amount", ',', '.')::numeric <= $${values.length}`)
     }
 
     if (created_after) {
@@ -266,14 +270,16 @@ export class PgBanksTransactionsRepository implements BanksTransactionsRepositor
         ob."msgError" AS msg_error_blockchain,
         px."msgError" AS msg_error_bank,
         px."createdAt"::text AS "createdAt",
-        ob."typeIn"
+        ob."typeIn",
+        t.symbol AS token_symbol
       FROM "orderSell" AS ob
       LEFT JOIN "pixIn" AS px ON px.id = ob."pixInId"
       LEFT JOIN "aclWallets" AS aw ON aw.wallet = ob.wallet OR aw."btcWallet" = ob.wallet OR aw."liquidWallet" = ob.wallet
+      LEFT JOIN "tokens" AS t ON t.id = ob."tokensId"
     `
 
     const orderLimit = `
-      ORDER BY ${safeSortBy} ${safeSortOrder}
+      ORDER BY ${orderByColumn} ${safeSortOrder}
       LIMIT $${values.length + 1}
       OFFSET $${values.length + 2}
     `
