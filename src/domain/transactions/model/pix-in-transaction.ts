@@ -1,0 +1,20 @@
+export interface PixInTransaction {
+  id: number | null
+  wallet_id: number | null
+  txid: string | null
+  receive_wallet: string | null
+  receive_name: string | null
+  receive_doc: string | null
+  destinationKey: string | null
+  end2end: string | null
+  PayerName: string | null
+  payerDocument: string | null
+  amount: number | null
+  status_bank: string | null
+  status_blockchain: string | null
+  msg_error_blockchain: string | null
+  msg_error_bank: string | null
+  createdAt: string | null
+  typeIn: string | null
+  token_symbol: string | null
+}
