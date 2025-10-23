@@ -16,12 +16,12 @@ export class PgReplyActionsRepository implements ReplyActionsRepository {
     action_type_id: number;
     data_email: string | null;
     data_new_ticket_reason_id: number | null;
-    data_new_ticket_assign_to_group: string | null;
+    data_new_ticket_assign_role: number | null;
   }): Promise<ReplyAction> {
     const client = await this.getClient();
     const result = await client.query(
       `INSERT INTO reply_actions
-        (reply_id, action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_to_group)
+        (reply_id, action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_role)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [
@@ -29,7 +29,7 @@ export class PgReplyActionsRepository implements ReplyActionsRepository {
         data.action_type_id,
         data.data_email,
         data.data_new_ticket_reason_id,
-        data.data_new_ticket_assign_to_group,
+        data.data_new_ticket_assign_role,
       ]
     );
     return result.rows[0];

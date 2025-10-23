@@ -58,7 +58,7 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
         for (const action of r.actions) {
           await client.query(
             `
-              INSERT INTO reply_actions (reply_id, action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_to_group)
+              INSERT INTO reply_actions (reply_id, action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_role)
               VALUES ($1, $2, $3, $4, $5);
               `,
             [
@@ -66,7 +66,7 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
               action.action_type_id,
               action.data_email ?? null,
               action.data_new_ticket_reason_id ?? null,
-              action.data_new_ticket_assign_to_group ?? null,
+              action.data_new_ticket_assign_role ?? null,
             ]
           );
         }
@@ -120,7 +120,7 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
           action_type_id: row.action_type_id,
           data_email: row.data_email,
           data_new_ticket_reason_id: row.data_new_ticket_reason_id,
-          data_new_ticket_assign_to_group: row.data_new_ticket_assign_to_group,
+          data_new_ticket_assign_role: row.data_new_ticket_assign_role,
           action_type: {
             id: row.action_type_id,
             type: row.action_type,
@@ -155,7 +155,7 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
                     'action_type_id', ra.action_type_id,
                     'data_email', ra.data_email,
                     'data_new_ticket_reason_id', ra.data_new_ticket_reason_id,
-                    'data_new_ticket_assign_to_group', ra.data_new_ticket_assign_to_group
+                    'data_new_ticket_assign_role', ra.data_new_ticket_assign_role
                   )
                 )
                 FROM reply_actions ra

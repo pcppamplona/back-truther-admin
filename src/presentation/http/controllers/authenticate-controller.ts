@@ -20,13 +20,18 @@ export async function authenticateController(
     senderType: 'USER',
     senderId: String(user.id),
     targetType: 'ADMIN',
-    targetId: '1'// assuming '1' is the system admin ID
+    targetId: '1'
   })
+
+  console.log("-----------")    
+  console.log(user.id)
+  console.log(user.role_id)
+  console.log("-----------")
 
 
   const token = request.server.generateJwt({
     sub: user.id,
-    role: user.group_level,
+    role: user.role_id,
     name: user.name
   });
   return reply.status(200).send({ token });

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS reply_actions (
   action_type_id INTEGER NOT NULL,
   data_email VARCHAR,
   data_new_ticket_reason_id INTEGER,
-  data_new_ticket_assign_to_group VARCHAR,
+  data_new_ticket_assign_role INTEGER,
   CONSTRAINT reply_actions_reply_id_fkey 
     FOREIGN KEY (reply_id) 
     REFERENCES reply_reasons (id) 

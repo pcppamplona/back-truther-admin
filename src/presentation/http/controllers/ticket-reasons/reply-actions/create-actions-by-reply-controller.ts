@@ -7,7 +7,7 @@ export async function createReplyActionController(req: FastifyRequest, reply: Fa
     action_type_id: number;
     data_email: string | null;
     data_new_ticket_reason_id: number | null;
-    data_new_ticket_assign_to_group: string | null;
+    data_new_ticket_assign_role: number | null;
   };
   const useCase = makeCreateReplyActionsUseCase(req.pgClient);
   const result = await useCase.execute({ reply_id, ...data });
