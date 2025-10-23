@@ -23,12 +23,6 @@ export async function authenticateController(
     targetId: '1'
   })
 
-  console.log("-----------")    
-  console.log(user.id)
-  console.log(user.role_id)
-  console.log("-----------")
-
-
   const token = request.server.generateJwt({
     sub: user.id,
     role: user.role_id,

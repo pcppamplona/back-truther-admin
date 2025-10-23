@@ -7,6 +7,5 @@ export interface User {
   active: boolean
   created_at: string
   type_auth: string
-  group_level: string
   role_id: number
 }
