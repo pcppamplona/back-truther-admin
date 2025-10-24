@@ -7,6 +7,6 @@ export const userDbSchema = z.object({
   password: z.string(),         
   active: z.boolean(),
   type_auth: z.string(),    
-  group_level: z.number(),
+  role_id: z.number(),
   created_at: z.date(),
 })

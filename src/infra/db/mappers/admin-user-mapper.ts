@@ -15,7 +15,7 @@ export class AdminUserMapper {
       active: row.active,
       created_at: row.createdAt || row.created_at,
       type_auth: row.typeAuth || row.type_auth,
-      group_level: row.groupLevel || row.group_level,
+      // group_level: row.groupLevel || row.group_level,
       role_id: row.role_id
     }
   }

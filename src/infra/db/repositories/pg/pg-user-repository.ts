@@ -27,7 +27,6 @@ export class PgUserRepository implements UsersRepository {
            username,
            password,
            type_auth AS "typeAuth",
-           group_level AS "groupLevel",
            created_at AS "createdAt",
            role_id
          FROM users
@@ -57,7 +56,6 @@ export class PgUserRepository implements UsersRepository {
             active,
             created_at AS "createdAt",
             type_auth AS "typeAuth",
-            group_level AS "groupLevel",
             role_id
           FROM users`
       );
@@ -82,7 +80,7 @@ export class PgUserRepository implements UsersRepository {
       "username",
       "created_at",
       "updated_at",
-      "group_level",
+      "role_id",
     ];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "id";
     const safeSortOrder = sortOrder?.toUpperCase() === "DESC" ? "DESC" : "ASC";
@@ -110,7 +108,6 @@ export class PgUserRepository implements UsersRepository {
         active,
         created_at AS "createdAt",
         type_auth AS "typeAuth",
-        group_level AS "groupLevel",
         role_id
       FROM users
       ${whereClause}
@@ -153,7 +150,6 @@ export class PgUserRepository implements UsersRepository {
             active,
             created_at AS "createdAt",
             type_auth AS "typeAuth",
-            group_level AS "groupLevel",
             role_id
           FROM users
           WHERE id = $1

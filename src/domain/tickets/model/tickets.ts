@@ -17,7 +17,7 @@ export interface Ticket {
 export type UserTicket = {
   id: number;
   name: string;
-  group_level: string;
+  role_id: string;
 };
 
 export type ClientTicket = {
