@@ -14,12 +14,14 @@ import { getTicketReasonsReplyActionsController } from "../../controllers/ticket
 import { finalizeTicketController } from "../../controllers/tickets/finalize-ticket-controller";
 import { GetTicketsPaginatedController } from "../../controllers/tickets/get-tickets-paginated-controller";
 import { PaginatedQuerySchema } from "../../schemas/paginated.schema";
+import { checkPermission } from "../../middlewares/check-permission";
 
 export async function ticketsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
     "/tickets",
     {
-      preHandler: [verifyJwt()],
+      // preHandler: [verifyJwt()],
+      preHandler: [verifyJwt(), checkPermission("tickets:read")],
       schema: {
         tags: ["Ticket"],
         summary:
@@ -31,7 +33,9 @@ export async function ticketsRoutes(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/paginated",
       {
-        preHandler: [verifyJwt()],
+        // preHandler: [verifyJwt()],
+        preHandler: [verifyJwt(), checkPermission("tickets:read")],
+
         schema: {
           tags: ["Ticket"],
           summary:
@@ -44,7 +48,9 @@ export async function ticketsRoutes(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/:id",
       {
-        preHandler: [verifyJwt()],
+        // preHandler: [verifyJwt()],
+        preHandler: [verifyJwt(), checkPermission("tickets:read")],
+
         schema: {
           tags: ["Ticket"],
           summary: "Get ticket by id (requires authentication)",
@@ -55,7 +61,9 @@ export async function ticketsRoutes(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post(
       "/tickets",
       {
-        preHandler: [verifyJwt()],
+        // preHandler: [verifyJwt()],
+        preHandler: [verifyJwt(), checkPermission("tickets:create")],
+
         schema: {
           tags: ["Ticket"],
           summary: "create ticket (requires authentication)",
@@ -66,12 +74,12 @@ export async function ticketsRoutes(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().patch(
       "/tickets/:id",
       {
-        preHandler: [verifyJwt()],
+        // preHandler: [verifyJwt()],
+        preHandler: [verifyJwt(), checkPermission("tickets:update")],
+
         schema: {
           tags: ["Ticket"],
           summary: "update ticket (requires authentication)",
-          // params: updateTicketParamsSchema,
-          // body: updateTicketBodySchema,
         },
       },
       updateTicketController
@@ -81,7 +89,9 @@ export async function ticketsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     "/tickets/comments",
     {
-      preHandler: [verifyJwt()],
+      // preHandler: [verifyJwt()],
+      preHandler: [verifyJwt(), checkPermission("comments:create")],
+
       schema: {
         tags: ["Ticket comment"],
         summary: "create ticket comment (requires authentication)",
@@ -92,7 +102,9 @@ export async function ticketsRoutes(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get(
       "/tickets/comments/:ticket_id",
       {
-        preHandler: [verifyJwt()],
+        // preHandler: [verifyJwt()],
+        preHandler: [verifyJwt(), checkPermission("comments:create")],
+
         schema: {
           tags: ["Ticket comment"],
           summary: "get all tickets comment (requires authentication)",
@@ -155,7 +167,8 @@ export async function ticketsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().patch(
     "/tickets/:id/finalize",
     {
-      preHandler: [verifyJwt()],
+      // preHandler: [verifyJwt()],
+      preHandler: [verifyJwt(), checkPermission("tickets:update")],
       schema: {
         tags: ["Ticket"],
         summary: "Finaliza ticket, executa actions, cria comentários e audita",

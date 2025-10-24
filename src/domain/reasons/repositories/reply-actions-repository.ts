@@ -6,7 +6,7 @@ export interface ReplyActionsRepository {
     action_type_id: number;
     data_email: string | null;
     data_new_ticket_reason_id: number | null;
-    data_new_ticket_assign_to_group: string | null;
+    data_new_ticket_assign_role: number | null;
   }): Promise<ReplyAction>;
   findByReplyId(reply_id: number): Promise<ReplyAction[]>;
   delete(id: number): Promise<void>;

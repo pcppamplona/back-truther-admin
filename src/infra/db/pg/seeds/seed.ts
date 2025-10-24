@@ -20,12 +20,12 @@ async function seed() {
       description: 'Inserindo usuários',
       sql: `
         INSERT INTO users
-          (uuid, name, username, password, active, created_at, updated_at, deleted_at, force_reset_pwd, type_auth, group_level)
+          (uuid, name, username, password, active, created_at, updated_at, deleted_at, force_reset_pwd, type_auth, role_id)
         VALUES
-          ('f72d57c6-4eef-4940-b215-d03d47efd429', 'Jonathan Santos', 'jonathan@smartpay.com.vc', crypt('1234567', gen_salt('bf')), false, '2024-11-08T22:39:16.988Z', '2024-12-20T00:35:14.905Z', NULL, false, 'ADMIN', 'N1'),
-          ('1f17746c-894e-45d8-8042-df7799c7f25b', 'Caroline De Melo Cardoso', 'carol_cardoso@smartpay.com.vc', crypt('1234567', gen_salt('bf')), true, '2024-01-02T19:10:42.705Z', '2024-01-02T19:10:42.705Z', NULL, true, 'ADMIN', 'N2'),
-          ('23a64a43-8b22-459f-b8bc-cff756dd72a2', 'Gustavo Lopes', 'gustavo_lopes@smartpay.com.vc', crypt('1234567', gen_salt('bf')), true, '2024-01-02T19:16:53.508Z', '2025-01-30T23:38:09.740Z', NULL, false, 'ADMIN', 'Produto'),
-          ('f6963179-5917-4700-aa0c-4deaad28fba6', 'Gustavo Linhares', 'gustavo@digitalhorizon.sv', crypt('1234567', gen_salt('bf')), true, '2024-02-26T21:08:00.935Z', '2024-02-26T21:08:00.935Z', NULL, true, 'ADMIN', 'Admin')
+          ('f72d57c6-4eef-4940-b215-d03d47efd429', 'Jonathan Santos', 'jonathan@smartpay.com.vc', crypt('1234567', gen_salt('bf')), false, '2024-11-08T22:39:16.988Z', '2024-12-20T00:35:14.905Z', NULL, false, 'ADMIN', 1),
+          ('1f17746c-894e-45d8-8042-df7799c7f25b', 'Caroline De Melo Cardoso', 'carol_cardoso@smartpay.com.vc', crypt('1234567', gen_salt('bf')), true, '2024-01-02T19:10:42.705Z', '2024-01-02T19:10:42.705Z', NULL, true, 'ADMIN', 2),
+          ('23a64a43-8b22-459f-b8bc-cff756dd72a2', 'Gustavo Lopes', 'gustavo_lopes@smartpay.com.vc', crypt('1234567', gen_salt('bf')), true, '2024-01-02T19:16:53.508Z', '2025-01-30T23:38:09.740Z', NULL, false, 'ADMIN', 3),
+          ('f6963179-5917-4700-aa0c-4deaad28fba6', 'Gustavo Linhares', 'gustavo@digitalhorizon.sv', crypt('1234567', gen_salt('bf')), true, '2024-02-26T21:08:00.935Z', '2024-02-26T21:08:00.935Z', NULL, true, 'ADMIN', 6'Admin')
       `
     },
     {

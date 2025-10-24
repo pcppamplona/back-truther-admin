@@ -4,7 +4,7 @@ export interface Ticket {
   id?: number;
   created_by: number;
   client_id?: number | null;
-  assigned_group: Group | null;
+  assigned_role: number | null;
   assigned_user: number | null;
   reason_id: number;
   status: Status;
@@ -17,7 +17,7 @@ export interface Ticket {
 export type UserTicket = {
   id: number;
   name: string;
-  group_level: string;
+  role_id: string;
 };
 
 export type ClientTicket = {
@@ -69,7 +69,7 @@ export interface TicketData {
   id: number;
   created_by: UserTicket;
   client: ClientTicket | null;
-  assigned_group: string | null;
+  assigned_role: number | null;
   assigned_user: UserTicket | null;
   reason: TicketReason;
   status: Status;

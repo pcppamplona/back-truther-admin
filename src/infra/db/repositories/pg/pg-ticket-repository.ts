@@ -43,13 +43,13 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await this.getClient();
     try {
       const result = await client.query(
-        `INSERT INTO tickets (created_by, client_id, assigned_group, assigned_user, reason_id, status, chain_id_main, chain_id_last)
+        `INSERT INTO tickets (created_by, client_id, assigned_role, assigned_user, reason_id, status, chain_id_main, chain_id_last)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
         [
           data.created_by,
           data.client_id,
-          data.assigned_group ?? null,
+          data.assigned_role ?? null,
           data.assigned_user,
           data.reason_id,
           data.status,
@@ -76,66 +76,67 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findPaginated(
-    params: PaginationParams & {
-      onlyAssigned?: boolean;
-      assignedGroup?: string;
-      userId?: string;
-    }
-  ): Promise<PaginatedResult<Ticket>> {
-    const {
-      page,
-      limit,
-      search,
-      sortBy = "created_at",
-      sortOrder = "DESC",
-      onlyAssigned,
-      assignedGroup,
-      userId,
-    } = params;
+  params: PaginationParams & {
+    onlyAssigned?: boolean;
+    assigned_role?: number;
+    userId?: string;
+  }
+): Promise<PaginatedResult<Ticket>> {
+  const {
+    page,
+    limit,
+    search,
+    sortBy = "created_at",
+    sortOrder = "DESC",
+    onlyAssigned,
+    assigned_role,
+    userId,
+  } = params;
 
-    const client = await this.getClient();
-    const offset = (page - 1) * limit;
+  const client = await this.getClient();
+  const offset = (page - 1) * limit;
 
-    const allowedSortBy = ["id", "status", "created_at"];
-    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
-    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+  const allowedSortBy = ["id", "status", "created_at"];
+  const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+  const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
-    const where: string[] = [];
-    const values: any[] = [];
+  const where: string[] = [];
+  const values: any[] = [];
 
-    if (search) {
-      values.push(`%${search}%`);
-      where.push(`
-      (
-        CAST(t.id AS TEXT) ILIKE $${values.length}
-        OR t.status ILIKE $${values.length}
-        OR tr.reason ILIKE $${values.length}
-        OR tr.type ILIKE $${values.length}
-        OR tr.description ILIKE $${values.length}
-      )
-    `);
-    }
+  // Filtro de busca textual
+  if (search) {
+    values.push(`%${search}%`);
+    where.push(`(
+      CAST(t.id AS TEXT) ILIKE $${values.length}
+      OR t.status ILIKE $${values.length}
+      OR tr.reason ILIKE $${values.length}
+      OR tr.type ILIKE $${values.length}
+      OR tr.description ILIKE $${values.length}
+    )`);
+  }
 
-    if (onlyAssigned && userId) {
-      values.push(userId);
-      where.push(`t.assigned_user = $${values.length}`);
-    }
+  // Filtro de assigned_user (quando onlyAssigned é true)
+  if (onlyAssigned && userId) {
+    values.push(userId);
+    where.push(`t.assigned_user = $${values.length}`);
+  }
 
-    if (assignedGroup) {
-      values.push(assignedGroup);
-      where.push(`t.assigned_group = $${values.length}`);
-    }
+  // Filtro de assignedRole sempre que definido
+  if (assigned_role != null) {
+    values.push(Number(assigned_role));
+    where.push(`t.assigned_role = $${values.length}`);
+  }
 
-    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+  const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
-    try {
-      const query = `
-      SELECT 
+  try {
+    const query = `
+      SELECT
         t.id,
         json_build_object(
           'id', u.id,
           'name', u.name,
-          'group', u.group_level
+          'role', json_build_object('id', r_u.id, 'name', r_u.name, 'description', r_u.description)
         ) AS created_by,
         json_build_object(
           'id', c.id,
@@ -143,16 +144,16 @@ export class PgTicketRepository implements TicketsRepository {
           'document', ui.document,
           'phone', ui.phone
         ) AS client,
-        t.assigned_group,
+        t.assigned_role,
         json_build_object(
           'id', au.id,
           'name', au.name,
-          'group', au.group_level
+          'role', json_build_object('id', r_au.id, 'name', r_au.name, 'description', r_au.description)
         ) AS assigned_user,
         json_build_object(
           'id', tr.id,
           'category_id', tr.category_id,
-          'type', tr.type_recipient, -- ← corrigido
+          'type', tr.type_recipient,
           'reason', tr.reason,
           'description', tr.description,
           'expired_at', tr.expired_at,
@@ -163,9 +164,11 @@ export class PgTicketRepository implements TicketsRepository {
         t.created_at
       FROM tickets t
       JOIN users u ON t.created_by = u.id
+      LEFT JOIN roles r_u ON u.role_id = r_u.id
       LEFT JOIN clients c ON t.client_id = c.id
-      LEFT JOIN userinfo ui ON ui.user_id = c.id 
+      LEFT JOIN userinfo ui ON ui.user_id = c.id
       LEFT JOIN users au ON t.assigned_user = au.id
+      LEFT JOIN roles r_au ON au.role_id = r_au.id
       JOIN ticket_reasons tr ON t.reason_id = tr.id
       ${whereClause}
       ORDER BY t.${safeSortBy} ${safeSortOrder}
@@ -173,78 +176,81 @@ export class PgTicketRepository implements TicketsRepository {
       OFFSET $${values.length + 2}
     `;
 
-      const countQuery = `
+    const countQuery = `
       SELECT COUNT(*)::int AS total
       FROM tickets t
       JOIN users u ON t.created_by = u.id
-      LEFT JOIN clients c ON t.client_id = c.id
-      LEFT JOIN userinfo ui ON ui.user_id = c.id 
       LEFT JOIN users au ON t.assigned_user = au.id
       JOIN ticket_reasons tr ON t.reason_id = tr.id
       ${whereClause}
     `;
 
-      const result = await client.query(query, [...values, limit, offset]);
-      const countResult = await client.query(countQuery, values);
+    console.log(query);
+    console.log([...values, limit, offset]);
 
-      return {
-        data: result.rows as Ticket[],
-        total: Number(countResult.rows[0].total),
-        page,
-        limit,
-      };
-    } finally {
-      if (!this.client) client.release();
-    }
+    const result = await client.query(query, [...values, limit, offset]);
+    const countResult = await client.query(countQuery, values);
+
+    return {
+      data: result.rows as Ticket[],
+      total: Number(countResult.rows[0].total),
+      page,
+      limit,
+    };
+  } finally {
+    if (!this.client) client.release();
   }
+}
 
   async findById(id: number): Promise<TicketData | null> {
     const client = await this.getClient();
     try {
       const result = await client.query(
         `
-      SELECT 
-        t.id,
-        json_build_object(
-          'id', u.id,
-          'name', u.name,
-          'group', u.group_level
-        ) AS created_by,
-        json_build_object(
-          'id', c.id,
-          'name', c.name,
-          'document', ui.document,
-          'phone', ui.phone
-        ) AS client,
-        t.assigned_group,
-        json_build_object(
-          'id', au.id,
-          'name', au.name,
-          'group', au.group_level
-        ) AS assigned_user,
-        json_build_object(
-          'id', tr.id,
-          'category_id', tr.category_id,
-          'type', tr.type_recipient, -- ← corrigido
-          'reason', tr.reason,
-          'description', tr.description,
-          'expired_at', tr.expired_at,
-          'type_recipient', tr.type_recipient,
-          'recipient', tr.recipient
-        ) AS reason,
-        t.status,
-        t.created_at,
-        t.chain_id_main,
-        t.chain_id_last
-      FROM tickets t
-      JOIN users u ON t.created_by = u.id
-      LEFT JOIN clients c ON t.client_id = c.id
-      LEFT JOIN userinfo ui ON ui.user_id = c.id 
-      LEFT JOIN users au ON t.assigned_user = au.id
-      JOIN ticket_reasons tr ON t.reason_id = tr.id
-      WHERE t.id = $1
-      LIMIT 1
-      `,
+        SELECT 
+          t.id,
+          json_build_object(
+            'id', u.id,
+            'name', u.name,
+            'role', json_build_object('id', r_u.id, 'name', r_u.name, 'description', r_u.description)
+          ) AS created_by,
+          json_build_object(
+            'id', c.id,
+            'name', c.name,
+            'document', ui.document,
+            'phone', ui.phone
+          ) AS client,
+          t.assigned_role,
+          json_build_object(
+            'id', au.id,
+            'name', au.name,
+            'role', json_build_object('id', r_au.id, 'name', r_au.name, 'description', r_au.description)
+          ) AS assigned_user,
+          json_build_object(
+            'id', tr.id,
+            'category_id', tr.category_id,
+            'type', tr.type_recipient,
+            'reason', tr.reason,
+            'description', tr.description,
+            'expired_at', tr.expired_at,
+            'type_recipient', tr.type_recipient,
+            'recipient', tr.recipient
+          ) AS reason,
+          t.status,
+          t.created_at,
+          t.chain_id_main,
+          t.chain_id_last
+        FROM tickets t
+        JOIN users u ON t.created_by = u.id
+        LEFT JOIN roles r_u ON u.role_id = r_u.id
+        LEFT JOIN clients c ON t.client_id = c.id
+        LEFT JOIN userinfo ui ON ui.user_id = c.id 
+        LEFT JOIN users au ON t.assigned_user = au.id
+        LEFT JOIN roles r_au ON au.role_id = r_au.id
+        JOIN ticket_reasons tr ON t.reason_id = tr.id
+        WHERE t.id = $1
+        LIMIT 1
+        `,
         [id]
       );
 
@@ -315,7 +321,6 @@ export class PgTicketRepository implements TicketsRepository {
         SELECT 
           id,
           category_id,
-          type,
           reason,
           expired_at,
           description,
@@ -340,7 +345,6 @@ export class PgTicketRepository implements TicketsRepository {
         SELECT 
           id,
           category_id,
-          type,
           reason,
           expired_at,
           description,
@@ -381,7 +385,7 @@ export class PgTicketRepository implements TicketsRepository {
     const client = await this.getClient();
     try {
       const result = await client.query(
-        `SELECT id, reply_id AS "reply_id", action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_to_group
+        `SELECT id, reply_id AS "reply_id", action_type_id, data_email, data_new_ticket_reason_id, data_new_ticket_assign_role
          FROM reply_actions
          WHERE reply_id = $1`,
         [replyId]

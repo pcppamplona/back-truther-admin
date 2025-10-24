@@ -1,4 +1,4 @@
-import { Group, TypeRecipient } from "@/domain/tickets/model/tickets";
+import { TypeRecipient } from "@/domain/tickets/model/tickets";
 
 export type TicketReason  = {
   id: number;
@@ -7,7 +7,7 @@ export type TicketReason  = {
   expired_at: number;
   description: string;
   type_recipient: TypeRecipient;
-  recipient: string;
+  recipient: number;
 };
 
 export interface ReplyReason {
@@ -25,12 +25,12 @@ export interface ActionsType {
 }
 
 export interface ReplyAction {
-  id: number;
+  id?: number;
   reply_id: number;
   action_type_id: number;
   data_email: string | null;
   data_new_ticket_reason_id: number | null;
-  data_new_ticket_assign_to_group: Group | null;
+  data_new_ticket_assign_role: number | null;
 }
 
 export interface ReasonCategories {

@@ -61,8 +61,8 @@ export class ActionExecutor {
 
     const newTicket = await this.repo.createTicket({
       created_by: data.user.id,
-      client_id: ticket.client.id,
-      assigned_group: action.data_new_ticket_assign_to_group ?? null,
+      client_id: ticket.client?.id ?? null,
+      assigned_role: action.data_new_ticket_assign_role ?? null,
       assigned_user: null,
       reason_id: reason.id,
       status: "PENDENTE",

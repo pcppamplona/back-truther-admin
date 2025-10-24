@@ -12,9 +12,6 @@ export async function usersRoutes(app: FastifyInstance) {
       schema: {
         tags: ["Users"],
         summary: "Get all users (requires authentication)",
-        // response: {
-        //   200: getUsersOutputSchema
-        // }
       },
     },
     getUsersController

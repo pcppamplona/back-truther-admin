@@ -21,8 +21,16 @@ export async function listAuditLogsPaginatedController(req: FastifyRequest, repl
     description
   } = req.query as any
 
+  const { sub: userId, role: roleId } = req.user
+
   const useCase = makeListAuditLogsPaginatedUseCase()
-  const params: AuditLogPaginationParams = {
+
+  const params: AuditLogPaginationParams & {
+    userId: number
+    roleId: number
+  } = {
+    userId,
+    roleId,
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
     search,
@@ -37,7 +45,7 @@ export async function listAuditLogsPaginatedController(req: FastifyRequest, repl
     target_external_id,
     created_after,
     created_before,
-    description
+    description,
   }
   const result = await useCase.execute(params)
 

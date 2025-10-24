@@ -4,7 +4,6 @@ import type {
   PaginatedResult,
   UsersRepository,
 } from "@/domain/user/repositories/user-repository";
-
 import { PostgresDatabase } from "../../pg/connection";
 import { AdminUserMapper } from "../../mappers/admin-user-mapper";
 import { PoolClient } from "pg";
@@ -28,8 +27,8 @@ export class PgUserRepository implements UsersRepository {
            username,
            password,
            type_auth AS "typeAuth",
-           group_level AS "groupLevel",
-           created_at AS "createdAt"
+           created_at AS "createdAt",
+           role_id
          FROM users
          WHERE username = $1
          LIMIT 1`,
@@ -56,11 +55,8 @@ export class PgUserRepository implements UsersRepository {
             password,
             active,
             created_at AS "createdAt",
-            updated_at AS "updatedAt",
-            deleted_at AS "deletedAt",
-            force_reset_pwd AS "forceResetPwd",
             type_auth AS "typeAuth",
-            group_level AS "groupLevel"
+            role_id
           FROM users`
       );
       return AdminUserMapper.toUserList(result.rows);
@@ -84,7 +80,7 @@ export class PgUserRepository implements UsersRepository {
       "username",
       "created_at",
       "updated_at",
-      "group_level",
+      "role_id",
     ];
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "id";
     const safeSortOrder = sortOrder?.toUpperCase() === "DESC" ? "DESC" : "ASC";
@@ -111,11 +107,8 @@ export class PgUserRepository implements UsersRepository {
         password,
         active,
         created_at AS "createdAt",
-        updated_at AS "updatedAt",
-        deleted_at AS "deletedAt",
-        force_reset_pwd AS "forceResetPwd",
         type_auth AS "typeAuth",
-        group_level AS "groupLevel"
+        role_id
       FROM users
       ${whereClause}
       ORDER BY ${safeSortBy} ${safeSortOrder}
@@ -156,11 +149,8 @@ export class PgUserRepository implements UsersRepository {
             password,
             active,
             created_at AS "createdAt",
-            updated_at AS "updatedAt",
-            deleted_at AS "deletedAt",
-            force_reset_pwd AS "forceResetPwd",
             type_auth AS "typeAuth",
-            group_level AS "groupLevel"
+            role_id
           FROM users
           WHERE id = $1
           LIMIT 1
