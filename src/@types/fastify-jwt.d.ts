@@ -16,12 +16,12 @@ declare module '@fastify/jwt' {
   interface FastifyJWT {
     payload: {
       sub: number
-      role: string
+      role: number
       name: string 
     }
     user: {
       sub: number
-      role: string
+      role: number
       iat: number
       exp: number
       name: string
