@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS users (
   deleted_at TIMESTAMPTZ NULL,
   force_reset_pwd BOOLEAN NOT NULL DEFAULT FALSE,
   type_auth TEXT NOT NULL,
-  group_level TEXT NOT NULL
+  role_id INTEGER NOT NULL
 );
