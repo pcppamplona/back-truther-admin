@@ -76,125 +76,131 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   async findPaginated(
-    params: PaginationParams & {
-      onlyAssigned?: boolean;
-      assignedRole?: number;
-      userId?: string;
-    }
-  ): Promise<PaginatedResult<Ticket>> {
-    const {
+  params: PaginationParams & {
+    onlyAssigned?: boolean;
+    assigned_role?: number;
+    userId?: string;
+  }
+): Promise<PaginatedResult<Ticket>> {
+  const {
+    page,
+    limit,
+    search,
+    sortBy = "created_at",
+    sortOrder = "DESC",
+    onlyAssigned,
+    assigned_role,
+    userId,
+  } = params;
+
+  const client = await this.getClient();
+  const offset = (page - 1) * limit;
+
+  const allowedSortBy = ["id", "status", "created_at"];
+  const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+  const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+  const where: string[] = [];
+  const values: any[] = [];
+
+  // Filtro de busca textual
+  if (search) {
+    values.push(`%${search}%`);
+    where.push(`(
+      CAST(t.id AS TEXT) ILIKE $${values.length}
+      OR t.status ILIKE $${values.length}
+      OR tr.reason ILIKE $${values.length}
+      OR tr.type ILIKE $${values.length}
+      OR tr.description ILIKE $${values.length}
+    )`);
+  }
+
+  // Filtro de assigned_user (quando onlyAssigned é true)
+  if (onlyAssigned && userId) {
+    values.push(userId);
+    where.push(`t.assigned_user = $${values.length}`);
+  }
+
+  // Filtro de assignedRole sempre que definido
+  if (assigned_role != null) {
+    values.push(Number(assigned_role));
+    where.push(`t.assigned_role = $${values.length}`);
+  }
+
+  const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+  try {
+    const query = `
+      SELECT
+        t.id,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'role', json_build_object('id', r_u.id, 'name', r_u.name, 'description', r_u.description)
+        ) AS created_by,
+        json_build_object(
+          'id', c.id,
+          'name', c.name,
+          'document', ui.document,
+          'phone', ui.phone
+        ) AS client,
+        t.assigned_role,
+        json_build_object(
+          'id', au.id,
+          'name', au.name,
+          'role', json_build_object('id', r_au.id, 'name', r_au.name, 'description', r_au.description)
+        ) AS assigned_user,
+        json_build_object(
+          'id', tr.id,
+          'category_id', tr.category_id,
+          'type', tr.type_recipient,
+          'reason', tr.reason,
+          'description', tr.description,
+          'expired_at', tr.expired_at,
+          'type_recipient', tr.type_recipient,
+          'recipient', tr.recipient
+        ) AS reason,
+        t.status,
+        t.created_at
+      FROM tickets t
+      JOIN users u ON t.created_by = u.id
+      LEFT JOIN roles r_u ON u.role_id = r_u.id
+      LEFT JOIN clients c ON t.client_id = c.id
+      LEFT JOIN userinfo ui ON ui.user_id = c.id
+      LEFT JOIN users au ON t.assigned_user = au.id
+      LEFT JOIN roles r_au ON au.role_id = r_au.id
+      JOIN ticket_reasons tr ON t.reason_id = tr.id
+      ${whereClause}
+      ORDER BY t.${safeSortBy} ${safeSortOrder}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+    `;
+
+    const countQuery = `
+      SELECT COUNT(*)::int AS total
+      FROM tickets t
+      JOIN users u ON t.created_by = u.id
+      LEFT JOIN users au ON t.assigned_user = au.id
+      JOIN ticket_reasons tr ON t.reason_id = tr.id
+      ${whereClause}
+    `;
+
+    console.log(query);
+    console.log([...values, limit, offset]);
+
+    const result = await client.query(query, [...values, limit, offset]);
+    const countResult = await client.query(countQuery, values);
+
+    return {
+      data: result.rows as Ticket[],
+      total: Number(countResult.rows[0].total),
       page,
       limit,
-      search,
-      sortBy = "created_at",
-      sortOrder = "DESC",
-      onlyAssigned,
-      assignedRole,
-      userId,
-    } = params;
-
-    const client = await this.getClient();
-    const offset = (page - 1) * limit;
-
-    const allowedSortBy = ["id", "status", "created_at"];
-    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
-    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
-
-    const where: string[] = [];
-    const values: any[] = [];
-
-    if (search) {
-      values.push(`%${search}%`);
-      where.push(`(
-        CAST(t.id AS TEXT) ILIKE $${values.length}
-        OR t.status ILIKE $${values.length}
-        OR tr.reason ILIKE $${values.length}
-        OR tr.type ILIKE $${values.length}
-        OR tr.description ILIKE $${values.length}
-      )`);
-    }
-
-    if (onlyAssigned && userId) {
-      values.push(userId);
-      where.push(`t.assigned_user = $${values.length}`);
-    }
-
-    if (assignedRole != null) {
-      values.push(Number(assignedRole));
-      where.push(`t.assigned_role = $${values.length}`);
-    }
-
-    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
-
-    try {
-      const query = `
-        SELECT 
-          t.id,
-          json_build_object(
-            'id', u.id,
-            'name', u.name,
-            'role', json_build_object('id', r_u.id, 'name', r_u.name, 'description', r_u.description)
-          ) AS created_by,
-          json_build_object(
-            'id', c.id,
-            'name', c.name,
-            'document', ui.document,
-            'phone', ui.phone
-          ) AS client,
-          t.assigned_role,
-          json_build_object(
-            'id', au.id,
-            'name', au.name,
-            'role', json_build_object('id', r_au.id, 'name', r_au.name, 'description', r_au.description)
-          ) AS assigned_user,
-          json_build_object(
-            'id', tr.id,
-            'category_id', tr.category_id,
-            'type', tr.type_recipient,
-            'reason', tr.reason,
-            'description', tr.description,
-            'expired_at', tr.expired_at,
-            'type_recipient', tr.type_recipient,
-            'recipient', tr.recipient
-          ) AS reason,
-          t.status,
-          t.created_at
-        FROM tickets t
-        JOIN users u ON t.created_by = u.id
-        LEFT JOIN roles r_u ON u.role_id = r_u.id
-        LEFT JOIN clients c ON t.client_id = c.id
-        LEFT JOIN userinfo ui ON ui.user_id = c.id 
-        LEFT JOIN users au ON t.assigned_user = au.id
-        LEFT JOIN roles r_au ON au.role_id = r_au.id
-        JOIN ticket_reasons tr ON t.reason_id = tr.id
-        ${whereClause}
-        ORDER BY t.${safeSortBy} ${safeSortOrder}
-        LIMIT $${values.length + 1}
-        OFFSET $${values.length + 2}
-      `;
-
-      const countQuery = `
-        SELECT COUNT(*)::int AS total
-        FROM tickets t
-        JOIN users u ON t.created_by = u.id
-        LEFT JOIN users au ON t.assigned_user = au.id
-        JOIN ticket_reasons tr ON t.reason_id = tr.id
-        ${whereClause}
-      `;
-
-      const result = await client.query(query, [...values, limit, offset]);
-      const countResult = await client.query(countQuery, values);
-
-      return {
-        data: result.rows as Ticket[],
-        total: Number(countResult.rows[0].total),
-        page,
-        limit,
-      };
-    } finally {
-      if (!this.client) client.release();
-    }
+    };
+  } finally {
+    if (!this.client) client.release();
   }
+}
 
   async findById(id: number): Promise<TicketData | null> {
     const client = await this.getClient();
@@ -253,7 +259,6 @@ export class PgTicketRepository implements TicketsRepository {
       if (!this.client) client.release();
     }
   }
-
 
   async updateTicket(id: number, data: Partial<Ticket>): Promise<Ticket> {
     const client = await this.getClient();
