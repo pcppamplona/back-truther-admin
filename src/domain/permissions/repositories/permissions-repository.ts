@@ -10,3 +10,7 @@ export interface UserPermissionsRepository {
   create(data: Omit<UserPermission, 'id'>): Promise<void>
   findByUserId(userId: number): Promise<string[]>
 }
+
+export interface PermissionsRepository {
+  findAllByUserId(userId: number): Promise<string[]>
+}

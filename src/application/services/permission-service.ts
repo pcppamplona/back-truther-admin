@@ -1,4 +1,4 @@
-import { PermissionsRepository } from "@/infra/db/repositories/pg/pg-permissions.repository"
+import { PermissionsRepository } from "@/domain/permissions/repositories/permissions-repository"
 
 export class PermissionService {
   constructor(private readonly permissionsRepository: PermissionsRepository) {}

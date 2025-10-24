@@ -1,8 +1,7 @@
-import { PermissionService } from '@/application/services/permission-service'
-import { PermissionsRepository } from '@/infra/db/repositories/pg/pg-permissions.repository'
-import { PoolClient } from 'pg'
+import { PermissionService } from "@/application/services/permission-service"
+import { PgPermissionsRepository } from "@/infra/db/repositories/pg/pg-permissions-repository"
 
-export function makePermissionService(client?: PoolClient) {
-  const repo = new PermissionsRepository(client)
-  return new PermissionService(repo)
+export function makePermissionService(): PermissionService {
+  const repository = new PgPermissionsRepository()
+  return new PermissionService(repository)
 }

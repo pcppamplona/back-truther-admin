@@ -1,16 +1,13 @@
-import { makePermissionService } from '@/application/factories/permissions/make-permission-service';
-import { FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { makePermissionService } from '@/application/factories/permissions/make-permission-service'
 
 export function checkPermission(required: string) {
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const userId = Number(req.user?.sub);
+    const userId = Number(req.user?.sub)
+    if (!userId) return reply.status(401).send({ message: 'Unauthorized' })
 
-    if (!userId) {
-      return reply.status(401).send({ message: 'Unauthorized' });
-    }
-
-    const permissionService = makePermissionService();
-    const has = await permissionService.hasPermission(userId, required);
+    const permissionService = makePermissionService()
+    const has = await permissionService.hasPermission(userId, required)
 
     if (!has) {
       return reply.status(403).send({
@@ -18,7 +15,7 @@ export function checkPermission(required: string) {
         code: 'PERMISSION_DENIED',
         requiredPermission: required,
         userId
-      });
+      })
     }
-  };
+  }
 }
