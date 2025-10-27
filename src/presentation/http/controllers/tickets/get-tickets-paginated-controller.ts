@@ -1,20 +1,24 @@
-import { makeGetTicketsPaginatedUseCase } from "@/application/factories/tickets/make-get-tickets-paginated"
-import { FastifyRequest, FastifyReply } from "fastify"
+import { makeGetTicketsPaginatedUseCase } from "@/application/factories/tickets/make-get-tickets-paginated";
+import { FastifyRequest, FastifyReply } from "fastify";
 
-export async function GetTicketsPaginatedController(req: FastifyRequest, reply: FastifyReply) {
-  const { 
-    page = "1", 
-    limit = "100", 
-    search, 
-    sortBy, 
-    sortOrder, 
-    onlyAssigned, 
-    assignedGroup 
+export async function GetTicketsPaginatedController(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  const {
+    page = "1",
+    limit = "100",
+    search,
+    sortBy,
+    sortOrder,
+    onlyAssigned,
+    assignedRole,
   } = req.query as any;
 
   const userId = req.user.sub;
 
   const useCase = makeGetTicketsPaginatedUseCase(req.pgClient);
+
   const result = await useCase.execute({
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
@@ -22,7 +26,7 @@ export async function GetTicketsPaginatedController(req: FastifyRequest, reply: 
     sortBy,
     sortOrder,
     onlyAssigned: onlyAssigned === "true",
-    assignedGroup,
+    assignedRole,
     userId,
   });
 

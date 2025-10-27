@@ -78,7 +78,7 @@ export class PgTicketRepository implements TicketsRepository {
   async findPaginated(
   params: PaginationParams & {
     onlyAssigned?: boolean;
-    assigned_role?: number;
+    assignedRole?: number;
     userId?: string;
   }
 ): Promise<PaginatedResult<Ticket>> {
@@ -89,7 +89,7 @@ export class PgTicketRepository implements TicketsRepository {
     sortBy = "created_at",
     sortOrder = "DESC",
     onlyAssigned,
-    assigned_role,
+    assignedRole,
     userId,
   } = params;
 
@@ -122,8 +122,8 @@ export class PgTicketRepository implements TicketsRepository {
   }
 
   // Filtro de assignedRole sempre que definido
-  if (assigned_role != null) {
-    values.push(Number(assigned_role));
+  if (assignedRole != null) {
+    values.push(Number(assignedRole));
     where.push(`t.assigned_role = $${values.length}`);
   }
 
@@ -184,9 +184,6 @@ export class PgTicketRepository implements TicketsRepository {
       JOIN ticket_reasons tr ON t.reason_id = tr.id
       ${whereClause}
     `;
-
-    console.log(query);
-    console.log([...values, limit, offset]);
 
     const result = await client.query(query, [...values, limit, offset]);
     const countResult = await client.query(countQuery, values);
