@@ -6,7 +6,7 @@ export interface PaginationParams {
   sortOrder?: "ASC" | "DESC";
 
   onlyAssigned?: boolean;
-  assignedGroup?: string;
+  assignedRole?: string;
   userId?: string | number;
 }
 
