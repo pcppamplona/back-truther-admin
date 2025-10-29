@@ -33,3 +33,14 @@ export interface PixInPaginationParams extends PixCommonFilters {
   min_amount?: number
   max_amount?: number
 }
+
+
+export interface BilletCashoutParams extends PixCommonFilters {
+  status?: string;
+  receiverName?: string;
+  receiverDocument?: string;
+  min_amount?: number;
+  max_amount?: number;
+  banksId?: number;
+  orderId?: number;
+}

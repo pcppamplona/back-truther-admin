@@ -15,6 +15,8 @@ export interface ReplyReason {
   reason_id: number;
   reply: string;
   comment: boolean;
+
+  reason_name?: string;
 }
 
 export interface ActionsType {

@@ -8,6 +8,7 @@ export const PaginatedQuerySchema = z.object({
   sortOrder: z.enum(["ASC", "DESC"]).optional(),
   onlyAssigned: z.enum(["true", "false"]).optional(), 
   assignedRole: z.coerce.number().optional(),
+  status: z.string().optional()
 });
 
 export const IdParamsSchema = z.object({
