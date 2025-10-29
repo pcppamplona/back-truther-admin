@@ -53,22 +53,26 @@ export async function listPixOutPaginatedController(req: FastifyRequest, reply: 
   if (min_amount !== undefined) assignIfDefined('min_amount', Number(min_amount))
   if (max_amount !== undefined) assignIfDefined('max_amount', Number(max_amount))
 
-  if (Object.keys(filters).length > 0) {
-    try {
-      const auditUseCase = makeCreateAuditLogUseCase()
-      await auditUseCase.execute({
-        method: 'GET',
-        action: 'listing',
-        message: `User ${req.user?.name ?? ''} applied filters to search for PIX OUT transactions`,
-        description: JSON.stringify(filters),
-        sender_type: 'ADMIN',
-        sender_id: String(req.user?.sub ?? ''),
-        target_type: 'ADMIN',
-        target_id: '',
-      })
-    } catch (err) {
-      req.log?.warn({ err }, 'Failed to create audit log for PIXOUT filters')
-    }
+  try {
+    const auditUseCase = makeCreateAuditLogUseCase()
+    await auditUseCase.execute({
+      method: 'GET',
+      action: 'listing',
+      message: `User ${req.user?.name ?? ''} applied filters to search for PIX OUT transactions`,
+      description: JSON.stringify({
+        page: Number(page) || 1,
+        limit: Number(limit) || 50,
+        sortBy,
+        sortOrder,
+        ...filters,
+      }),
+      sender_type: 'ADMIN',
+      sender_id: String(req.user?.sub ?? ''),
+      target_type: 'ADMIN',
+      target_id: '',
+    })
+  } catch (err) {
+    req.log?.warn({ err }, 'Failed to create audit log for PIXOUT filters')
   }
 
   const result = await useCase.execute({
