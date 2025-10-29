@@ -8,6 +8,7 @@ export interface PaginationParams {
   onlyAssigned?: boolean;
   assignedRole?: string;
   userId?: string | number;
+  status?: string;
 }
 
 export interface PaginatedResult<T> {

@@ -37,9 +37,22 @@ export class PgReplyReasonsRepository implements ReplyReasonsRepository {
 
   async findAll(): Promise<ReplyReason[]> {
     const client = await this.getClient();
+
     const result = await client.query(
-      `SELECT * FROM reply_reasons ORDER BY id DESC`
+      `
+    SELECT 
+      rr.id,
+      rr.reason_id,
+      rr.reply,
+      rr.comment,
+      tr.reason AS reason_name
+    FROM reply_reasons rr
+    INNER JOIN ticket_reasons tr 
+      ON tr.id = rr.reason_id
+    ORDER BY rr.id DESC
+    `
     );
+
     return result.rows;
   }
 

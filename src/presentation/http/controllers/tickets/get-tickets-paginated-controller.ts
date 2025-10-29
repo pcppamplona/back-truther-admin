@@ -13,6 +13,7 @@ export async function GetTicketsPaginatedController(
     sortOrder,
     onlyAssigned,
     assignedRole,
+    status
   } = req.query as any;
 
   const userId = req.user.sub;
@@ -27,6 +28,7 @@ export async function GetTicketsPaginatedController(
     sortOrder,
     onlyAssigned: onlyAssigned === "true",
     assignedRole,
+    status,
     userId,
   });
 

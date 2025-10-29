@@ -9,7 +9,10 @@ import {
   listPixInQuerySchema,
   paginatedPixOutResponseSchema,
   paginatedPixInResponseSchema,
+  listBilletCashoutQuerySchema,
+  paginatedBilletCashoutResponseSchema,
 } from '../../schemas/transactions.schema'
+import { listBilletCashoutPaginatedController } from '../../controllers/transactions/list-billet-cashout-controller'
 
 export async function transactionsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -42,5 +45,21 @@ export async function transactionsRoutes(app: FastifyInstance) {
       },
     },
     listPixInPaginatedController,
+  )
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    '/transactions/billet-cashout',
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ['Transactions'],
+        summary: 'List billet cashout transactions with filters (requires authentication)',
+        // querystring: listBilletCashoutQuerySchema,
+        // response: {
+        //   200: paginatedBilletCashoutResponseSchema,
+        // },
+      },
+    },
+    listBilletCashoutPaginatedController,
   )
 }

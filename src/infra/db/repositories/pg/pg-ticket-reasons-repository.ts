@@ -27,10 +27,11 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
 
       const reasonRes = await client.query<TicketReason>(
         `
-          INSERT INTO ticket_reasons (category_id, type, reason, expired_at, description, type_recipient, recipient)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          INSERT INTO ticket_reasons
+            (category_id, reason, expired_at, description, type_recipient, recipient)
+          VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING *;
-          `,
+        `,
         [
           reason.category_id,
           reason.reason,
@@ -83,24 +84,24 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
   }
 
   async findById(id: number) {
-  const client = await this.getClient();
+    const client = await this.getClient();
 
-  const reasonRes = await client.query(
-    `SELECT * FROM ticket_reasons WHERE id = $1`,
-    [id]
-  );
+    const reasonRes = await client.query(
+      `SELECT * FROM ticket_reasons WHERE id = $1`,
+      [id]
+    );
 
-  if (reasonRes.rowCount === 0) return null;
+    if (reasonRes.rowCount === 0) return null;
 
-  const repliesRes = await client.query(
-    `SELECT * FROM reply_reasons WHERE reason_id = $1`,
-    [id]
-  );
+    const repliesRes = await client.query(
+      `SELECT * FROM reply_reasons WHERE reason_id = $1`,
+      [id]
+    );
 
-  const replies = await Promise.all(
-    repliesRes.rows.map(async (reply) => {
-      const actionsRes = await client.query(
-        `
+    const replies = await Promise.all(
+      repliesRes.rows.map(async (reply) => {
+        const actionsRes = await client.query(
+          `
         SELECT 
           ra.*, 
           at.type AS action_type, 
@@ -109,31 +110,30 @@ export class PgTicketReasonRepository implements TicketReasonRepository {
         JOIN actions_type at ON ra.action_type_id = at.id
         WHERE ra.reply_id = $1
         `,
-        [reply.id]
-      );
+          [reply.id]
+        );
 
-      return {
-        ...reply,
-        actions: actionsRes.rows.map((row) => ({
-          id: row.id,
-          reply_id: row.reply_id,
-          action_type_id: row.action_type_id,
-          data_email: row.data_email,
-          data_new_ticket_reason_id: row.data_new_ticket_reason_id,
-          data_new_ticket_assign_role: row.data_new_ticket_assign_role,
-          action_type: {
-            id: row.action_type_id,
-            type: row.action_type,
-            description_action: row.action_description,
-          },
-        })),
-      };
-    })
-  );
+        return {
+          ...reply,
+          actions: actionsRes.rows.map((row) => ({
+            id: row.id,
+            reply_id: row.reply_id,
+            action_type_id: row.action_type_id,
+            data_email: row.data_email,
+            data_new_ticket_reason_id: row.data_new_ticket_reason_id,
+            data_new_ticket_assign_role: row.data_new_ticket_assign_role,
+            action_type: {
+              id: row.action_type_id,
+              type: row.action_type,
+              description_action: row.action_description,
+            },
+          })),
+        };
+      })
+    );
 
-  return { ...reasonRes.rows[0], replies };
-}
-
+    return { ...reasonRes.rows[0], replies };
+  }
 
   async findAll(): Promise<TicketReason[]> {
     const client = await this.getClient();
