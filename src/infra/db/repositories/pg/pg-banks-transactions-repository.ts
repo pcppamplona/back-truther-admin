@@ -363,7 +363,7 @@ export class PgBanksTransactionsRepository
       orderId,
     } = params;
 
-    const client = await this.getClient();
+    const client = await this.getClientBanks();
     const offset = (page - 1) * limit;
 
     const filters: string[] = [];
