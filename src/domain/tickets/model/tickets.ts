@@ -61,7 +61,7 @@ export interface FinalizeTicketInput {
   user: {
     id: number;
     name: string;
-    group: string;
+    role_id: number;
   };
 }
 

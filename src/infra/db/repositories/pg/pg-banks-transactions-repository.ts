@@ -8,14 +8,20 @@ import {
   PixOutPaginationParams,
   PixInPaginationParams,
   BilletCashoutParams,
+  BridgeParams,
 } from "@/domain/transactions/model/pix-pagination-params";
 import { BilletCashoutTransaction } from "@/domain/transactions/model/billet-cashout-transaction";
+import { BridgeTransaction } from "@/domain/transactions/model/bridge-transaction";
 
 export class PgBanksTransactionsRepository
   implements BanksTransactionsRepository
 {
-  private async getClient(): Promise<PoolClient> {
+  private async getClientBanks(): Promise<PoolClient> {
     return PostgresDatabase.getClient("banks");
+  }
+
+  private async getClient(): Promise<PoolClient> {
+    return PostgresDatabase.getClient();
   }
 
   async findPixOutPaginated(
@@ -154,7 +160,7 @@ export class PgBanksTransactionsRepository
       ${whereClause}
     `;
 
-    const client = await this.getClient();
+    const client = await this.getClientBanks();
     try {
       const result = await client.query(query, [...values, limit, offset]);
       const count = await client.query(countQuery, values);
@@ -325,7 +331,7 @@ export class PgBanksTransactionsRepository
       ${whereClause}
     `;
 
-    const client = await this.getClient();
+    const client = await this.getClientBanks();
     try {
       const result = await client.query(query, [...values, limit, offset]);
       const count = await client.query(countQuery, values);
@@ -344,8 +350,8 @@ export class PgBanksTransactionsRepository
     params: BilletCashoutParams
   ): Promise<PaginatedResult<BilletCashoutTransaction>> {
     const {
-      page = 1,
-      limit = 20,
+      page,
+      limit,
       created_after,
       created_before,
       status,
@@ -370,7 +376,10 @@ export class PgBanksTransactionsRepository
       }
     };
 
-    addFilter(`LOWER(t."receiverName") LIKE LOWER($idx)`, receiverName ? `%${receiverName}%` : undefined);
+    addFilter(
+      `LOWER(t."receiverName") LIKE LOWER($idx)`,
+      receiverName ? `%${receiverName}%` : undefined
+    );
     addFilter(`t."receiverDocument" = $idx`, receiverDocument);
     addFilter(`UPPER(t."status"::text) = UPPER($idx)`, status);
     addFilter(`t."createdAt" >= $idx`, created_after);
@@ -429,6 +438,127 @@ export class PgBanksTransactionsRepository
 
       return {
         data: result.rows as BilletCashoutTransaction[],
+        total,
+        page,
+        limit,
+      };
+    } finally {
+      client.release();
+    }
+  }
+
+  async findBridgePaginated(
+    params: BridgeParams
+  ): Promise<PaginatedResult<BridgeTransaction>> {
+    const {
+      page,
+      limit,
+      user_id,
+      wallet_id,
+      value,
+      status,
+      sortBy = "created_at",
+      sortOrder = "DESC",
+      created_after,
+      created_before,
+    } = params;
+
+    const client = await this.getClient();
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = ["id", "created_at", "value", "status"];
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where: string[] = [];
+    const values: any[] = [];
+
+    if (user_id) {
+      values.push(user_id);
+      where.push(`t.user_id = $${values.length}`);
+    }
+
+    if (wallet_id) {
+      values.push(wallet_id);
+      where.push(`t.wallet_id = $${values.length}`);
+    }
+
+    if (value) {
+      values.push(value);
+      where.push(`t.value = $${values.length}`);
+    }
+
+    if (status) {
+      values.push(status);
+      where.push(`t.status = $${values.length}`);
+    }
+
+    if (created_after) {
+      values.push(created_after);
+      where.push(`t.created_at >= $${values.length}`);
+    }
+
+    if (created_before) {
+      values.push(created_before);
+      where.push(`t.created_at <= $${values.length}`);
+    }
+
+    const bridgeCondition = `
+      t.id IN (
+        SELECT parent_transaction_id
+        FROM public.transactions
+        WHERE parent_transaction_id IS NOT NULL
+        UNION
+        SELECT id
+        FROM public.transactions
+        WHERE parent_transaction_id IS NOT NULL
+      )
+    `;
+
+    const whereClause =
+      where.length > 0
+        ? `WHERE ${bridgeCondition} AND ${where.join(' AND ')}`
+        : `WHERE ${bridgeCondition}`;
+
+    try {
+      const countQuery = `
+        SELECT COUNT(*)::int AS total
+        FROM public.transactions t
+        ${whereClause};
+      `;
+
+    console.log('DEBUG SQL countQuery:', countQuery, values);
+
+      const countResult = await client.query(countQuery, values);
+      const total = Number(countResult.rows[0].total);
+
+      const dataQuery = `
+        SELECT
+          t.id,
+          t.user_id,
+          t.wallet_id,
+          t.from_address,
+          t.to_address,
+          t.value,
+          t.tx_hash,
+          t.status,
+          t.created_at,
+          t.flow,
+          t.type,
+          t.symbol,
+          t.retry_count,
+          t.protocol_destination
+        FROM public.transactions t
+        ${whereClause}
+        ORDER BY t.${safeSortBy} ${safeSortOrder}
+        LIMIT $${values.length + 1}
+        OFFSET $${values.length + 2};
+      `;
+
+      const result = await client.query(dataQuery, [...values, limit, offset]);
+
+      return {
+        data: result.rows as BridgeTransaction[],
         total,
         page,
         limit,
