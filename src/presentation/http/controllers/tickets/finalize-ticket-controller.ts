@@ -16,7 +16,7 @@ export async function finalizeTicketController(
   const user = {
     id: req.user.sub,
     name: req.user.name,
-    group: req.user.role,
+    role_id: req.user.role,
   };
 
   const result = await finalizeTicketUseCase.execute({

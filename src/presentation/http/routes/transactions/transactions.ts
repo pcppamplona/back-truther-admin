@@ -13,6 +13,7 @@ import {
   paginatedBilletCashoutResponseSchema,
 } from '../../schemas/transactions.schema'
 import { listBilletCashoutPaginatedController } from '../../controllers/transactions/list-billet-cashout-controller'
+import { listBridgePaginatedController } from '../../controllers/transactions/list-bridge-controller'
 
 export async function transactionsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -61,5 +62,17 @@ export async function transactionsRoutes(app: FastifyInstance) {
       },
     },
     listBilletCashoutPaginatedController,
+  )
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    '/transactions/bridges',
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ['Transactions'],
+        summary: 'List bridges transactions with filters (requires authentication)',
+      },
+    },
+    listBridgePaginatedController,
   )
 }

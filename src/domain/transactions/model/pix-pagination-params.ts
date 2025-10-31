@@ -44,3 +44,13 @@ export interface BilletCashoutParams extends PixCommonFilters {
   banksId?: number;
   orderId?: number;
 }
+
+
+export interface BridgeParams extends PixCommonFilters {
+  user_id?: number
+  wallet_id?: number
+  value?: number
+  status?: string
+  sortBy?: string
+  sortOrder?: 'ASC' | 'DESC'
+}
