@@ -1,0 +1,12 @@
+ALTER TABLE IF EXISTS users
+    DROP COLUMN IF EXISTS group_level;
+
+ALTER TABLE IF EXISTS users
+    ADD COLUMN IF NOT EXISTS role_id INTEGER;
+
+UPDATE users
+SET role_id = 1
+WHERE role_id IS NULL;
+
+ALTER TABLE IF EXISTS users
+    ALTER COLUMN role_id SET NOT NULL;
