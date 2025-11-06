@@ -15,17 +15,25 @@ export class PgPermissionsRepository implements PermissionsRepository {
     try {
       const result = await client.query(
         `
-        SELECT DISTINCT p.key_name
-        FROM permissions p
-        LEFT JOIN role_permissions rp ON rp.permission_id = p.id
-        LEFT JOIN users u ON u.role_id = rp.role_id
-        LEFT JOIN user_permissions up ON up.permission_id = p.id AND up.user_id = u.id
-        WHERE u.id = $1
-        
+        (
+          SELECT p.key_name
+          FROM role_permissions rp
+          JOIN permissions p ON p.id = rp.permission_id
+          JOIN users u ON u.role_id = rp.role_id
+          WHERE u.id = $1
+        )
+        UNION
+        (
+          SELECT p.key_name
+          FROM user_permissions up
+          JOIN permissions p ON p.id = up.permission_id
+          WHERE up.user_id = $1
+        )
+        ORDER BY key_name
         `,
         [userId]
       )
-      return result.rows.map(r => r.key_name)
+      return result.rows.map(r => r.key_name as string)
     } finally {
       client.release()
     }

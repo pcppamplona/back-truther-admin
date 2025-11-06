@@ -10,6 +10,7 @@ export interface RolePermissionsRepository {
 export interface UserPermissionsRepository {
   create(data: Omit<UserPermission, 'id'>): Promise<void>
   findByUserId(userId: number): Promise<string[]>
+  findDetailsByUserId(userId: number): Promise<{ key_name: string; description: string | null }[]>
 }
 
 export interface PermissionsRepository {
