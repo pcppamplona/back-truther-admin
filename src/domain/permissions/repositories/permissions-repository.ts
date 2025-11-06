@@ -4,6 +4,7 @@ import { RolePermission, UserPermission } from "../model/permissions"
 export interface RolePermissionsRepository {
   create(data: Omit<RolePermission, 'id'>): Promise<void>
   findByRoleId(roleId: number): Promise<string[]>
+  findDetailsByRoleId(roleId: number): Promise<{ key_name: string; description: string | null }[]>
 }
 
 export interface UserPermissionsRepository {

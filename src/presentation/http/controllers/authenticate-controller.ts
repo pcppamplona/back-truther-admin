@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { makeAuthenticateUseCase } from "@/application/factories/make-authenticate-user";
 import { authenticateInputSchema } from "../schemas/authenticate.schema";
+import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions.repository";
 
 export async function authenticateController(
   request: FastifyRequest,
@@ -28,5 +29,9 @@ export async function authenticateController(
     role: user.role_id,
     name: user.name
   });
-  return reply.status(200).send({ token });
+
+  const rolePermissionsRepo = new PgRolePermissionsRepository();
+  const permissions = await rolePermissionsRepo.findDetailsByRoleId(user.role_id);
+
+  return reply.status(200).send({ token, permissions });
 }
