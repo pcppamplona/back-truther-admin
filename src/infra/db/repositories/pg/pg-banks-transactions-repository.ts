@@ -10,10 +10,12 @@ import {
   BilletCashoutParams,
   BridgeParams,
   UserTransactionsParams,
+  AtmParams,
 } from "@/domain/transactions/model/pix-pagination-params";
 import { BilletCashoutTransaction } from "@/domain/transactions/model/billet-cashout-transaction";
 import { BridgeTransaction } from "@/domain/transactions/model/bridge-transaction";
 import { UserTransaction } from "@/domain/transactions/model/user-transaction";
+import { AtmTransaction } from "@/domain/transactions/model/atm-transaction";
 
 export class PgBanksTransactionsRepository
   implements BanksTransactionsRepository
@@ -648,7 +650,7 @@ export class PgBanksTransactionsRepository
 
       const filters: string[] = [];
       const values: any[] = [walletPatterns];
-      let paramIndex = 2; 
+      let paramIndex = 2;
 
       if (params?.status) {
         filters.push(`LOWER(t.status) = LOWER($${paramIndex++})`);
@@ -675,8 +677,6 @@ export class PgBanksTransactionsRepository
         values.push(`%${params.hash}%`);
       }
 
-
-
       const queryBase = `
       FROM public.transactions t
       JOIN UNNEST($1::text[]) AS p(pattern)
@@ -686,15 +686,15 @@ export class PgBanksTransactionsRepository
       ${filters.length ? `AND ${filters.join(" AND ")}` : ""}
     `;
 
-       const { rows: countRows } = await clientAdmin.query<{ total: number }>(
-      `SELECT COUNT(*)::int AS total ${queryBase}`,
-      values
-    );
-    const total = countRows[0]?.total ?? 0;
+      const { rows: countRows } = await clientAdmin.query<{ total: number }>(
+        `SELECT COUNT(*)::int AS total ${queryBase}`,
+        values
+      );
+      const total = countRows[0]?.total ?? 0;
 
-    values.push(limit, offset);
-    const { rows: data } = await clientAdmin.query<UserTransaction>(
-      `
+      values.push(limit, offset);
+      const { rows: data } = await clientAdmin.query<UserTransaction>(
+        `
       SELECT 
         t.id,
         t.uuid,
@@ -715,13 +715,136 @@ export class PgBanksTransactionsRepository
       ORDER BY t.${sortBy} ${sortOrder}
       LIMIT $${paramIndex++} OFFSET $${paramIndex}
       `,
-      values
-    );
+        values
+      );
 
-    return { data, total, page, limit };
-  } finally {
-    clientBanks.release();
-    clientAdmin.release();
+      return { data, total, page, limit };
+    } finally {
+      clientBanks.release();
+      clientAdmin.release();
+    }
   }
-}
+
+  async findAtmPaginated(
+    params: AtmParams
+  ): Promise<PaginatedResult<AtmTransaction>> {
+    const {
+      page,
+      limit,
+      sortBy = 'atm."createdAt"',
+      sortOrder = "DESC",
+      created_after,
+      created_before,
+      txid,
+      sender,
+      receiverDocument,
+      receiverName,
+      status_bk,
+      status_px,
+      min_amount,
+      max_amount,
+    } = params;
+
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = new Set<string>([
+      "ob.id",
+      "ob.txid",
+      'ob."sender"',
+      'atm."receiverName"',
+      'atm."receiverDocument"',
+      'atm."amount"',
+      'atm."status"',
+      "ob.status",
+      'atm."createdAt"',
+    ]);
+
+    const safeSortBy = allowedSortBy.has(sortBy) ? sortBy : 'atm."createdAt"';
+    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where: string[] = [];
+    const values: unknown[] = [];
+    const pushWhere = (clause: string, value?: unknown) => {
+      if (value === undefined || value === null || value === "") return;
+      values.push(value);
+      where.push(`${clause} $${values.length}`);
+    };
+
+    pushWhere("ob.txid =", txid);
+    pushWhere('ob."sender" =', sender);
+    pushWhere('atm."receiverDocument" =', receiverDocument);
+
+    if (receiverName) {
+      values.push(`%${receiverName}%`);
+      where.push(`atm."receiverName" ILIKE $${values.length}`);
+    }
+
+    pushWhere('atm."status" =', status_px);
+    pushWhere("ob.status =", status_bk);
+
+    if (min_amount !== undefined) {
+      values.push(min_amount);
+      where.push(`atm."amount" >= $${values.length}`);
+    }
+    if (max_amount !== undefined) {
+      values.push(max_amount);
+      where.push(`atm."amount" <= $${values.length}`);
+    }
+
+    if (created_after) {
+      values.push(created_after);
+      where.push(`atm."createdAt" >= $${values.length}`);
+    }
+    if (created_before) {
+      values.push(created_before);
+      where.push(`atm."createdAt" <= $${values.length}`);
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    const select = `
+    SELECT
+      ob.id,
+      ob.txid,
+      ob."sender",
+      ob.status AS status_bk,
+      atm."receiverName",
+      atm."receiverDocument",
+      atm."amount" AS amount_brl,
+      atm."status" AS status_px,
+      atm."createdAt"::text AS createdAt
+    FROM "orderBuy" AS ob
+    LEFT JOIN "atmCashout" AS atm ON atm."orderId" = ob."id"
+  `;
+
+    const query = `
+    ${select}
+    ${whereClause}
+    ORDER BY ${safeSortBy} ${safeSortOrder}
+    LIMIT $${values.length + 1}
+    OFFSET $${values.length + 2}
+  `;
+
+    const countQuery = `
+    SELECT COUNT(*)::int AS total
+    FROM "orderBuy" AS ob
+    LEFT JOIN "atmCashout" AS atm ON atm."orderId" = ob."id"
+    ${whereClause}
+  `;
+
+    const client = await this.getClientBanks();
+
+    try {
+      const result = await client.query(query, [...values, limit, offset]);
+      const count = await client.query(countQuery, values);
+      return {
+        data: result.rows as AtmTransaction[],
+        total: Number(count.rows[0]?.total ?? 0),
+        page,
+        limit,
+      };
+    } finally {
+      client.release();
+    }
+  }
 }
