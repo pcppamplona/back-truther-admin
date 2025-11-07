@@ -28,13 +28,30 @@ export class PgUserPermissionsRepository implements UserPermissionsRepository {
     const client = await this.getClient()
     try {
       const result = await client.query(
-        `SELECT p.name
+        `SELECT p.key_name
          FROM user_permissions up
          JOIN permissions p ON p.id = up.permission_id
          WHERE up.user_id = $1`,
         [userId]
       )
-      return result.rows.map(r => r.name)
+      return result.rows.map(r => r.key_name as string)
+    } finally {
+      client.release()
+    }
+  }
+
+  async findDetailsByUserId(userId: number): Promise<{ key_name: string; description: string | null }[]> {
+    const client = await this.getClient()
+    try {
+      const result = await client.query(
+        `SELECT p.key_name, p.description
+         FROM user_permissions up
+         JOIN permissions p ON p.id = up.permission_id
+         WHERE up.user_id = $1
+         ORDER BY p.key_name`,
+        [userId]
+      )
+      return result.rows.map(r => ({ key_name: r.key_name as string, description: r.description as string | null }))
     } finally {
       client.release()
     }

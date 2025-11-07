@@ -28,13 +28,30 @@ export class PgRolePermissionsRepository implements RolePermissionsRepository {
     const client = await this.getClient()
     try {
       const result = await client.query(
-        `SELECT p.name
+        `SELECT p.key_name
          FROM role_permissions rp
          JOIN permissions p ON p.id = rp.permission_id
          WHERE rp.role_id = $1`,
         [roleId]
       )
-      return result.rows.map(r => r.name)
+      return result.rows.map(r => r.key_name)
+    } finally {
+      client.release()
+    }
+  }
+
+  async findDetailsByRoleId(roleId: number): Promise<{ key_name: string; description: string | null }[]> {
+    const client = await this.getClient()
+    try {
+      const result = await client.query(
+        `SELECT p.key_name, p.description
+         FROM role_permissions rp
+         JOIN permissions p ON p.id = rp.permission_id
+         WHERE rp.role_id = $1
+         ORDER BY p.key_name`,
+        [roleId]
+      )
+      return result.rows.map(r => ({ key_name: r.key_name, description: r.description }))
     } finally {
       client.release()
     }
