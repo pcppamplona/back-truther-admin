@@ -692,7 +692,6 @@ export class PgBanksTransactionsRepository
     );
     const total = countRows[0]?.total ?? 0;
 
-    // 5. Dados paginados
     values.push(limit, offset);
     const { rows: data } = await clientAdmin.query<UserTransaction>(
       `
