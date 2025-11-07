@@ -54,3 +54,12 @@ export interface BridgeParams extends PixCommonFilters {
   sortBy?: string
   sortOrder?: 'ASC' | 'DESC'
 }
+
+
+export interface UserTransactionsParams extends PaginationParams {
+  status?: string;
+  created_after?: string;
+  created_before?: string;
+  value?: number;
+  hash?: string;
+}

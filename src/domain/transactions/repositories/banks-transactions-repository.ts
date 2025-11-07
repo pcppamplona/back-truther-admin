@@ -14,5 +14,5 @@ export interface BanksTransactionsRepository {
 
   findBridgePaginated(params: BridgeParams): Promise<PaginatedResult<BridgeTransaction>>;
 
-   findAllUserTransactionsByDocument(document: string, params?: PaginationParams): Promise<PaginatedResult<UserTransaction>>;
+  findAllUserTransactionsByDocument(document: string, params?: PaginationParams): Promise<PaginatedResult<UserTransaction>>;
 }

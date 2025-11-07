@@ -9,6 +9,7 @@ import {
   PixInPaginationParams,
   BilletCashoutParams,
   BridgeParams,
+  UserTransactionsParams,
 } from "@/domain/transactions/model/pix-pagination-params";
 import { BilletCashoutTransaction } from "@/domain/transactions/model/billet-cashout-transaction";
 import { BridgeTransaction } from "@/domain/transactions/model/bridge-transaction";
@@ -569,7 +570,7 @@ export class PgBanksTransactionsRepository
 
   async findAllUserTransactionsByDocument(
     document: string,
-    params?: PaginationParams
+    params?: UserTransactionsParams
   ): Promise<{
     data: UserTransaction[];
     total: number;
@@ -645,23 +646,56 @@ export class PgBanksTransactionsRepository
 
       const walletPatterns = allWalletsArray.map((w) => `%${w.toLowerCase()}%`);
 
+      const filters: string[] = [];
+      const values: any[] = [walletPatterns];
+      let paramIndex = 2; 
+
+      if (params?.status) {
+        filters.push(`LOWER(t.status) = LOWER($${paramIndex++})`);
+        values.push(params.status);
+      }
+
+      if (params?.created_after) {
+        filters.push(`t.created_at >= $${paramIndex++}`);
+        values.push(params.created_after);
+      }
+
+      if (params?.created_before) {
+        filters.push(`t.created_at <= $${paramIndex++}`);
+        values.push(params.created_before);
+      }
+
+      if (params?.value) {
+        filters.push(`t.value::numeric >= $${paramIndex++}`);
+        values.push(params.value);
+      }
+
+      if (params?.hash) {
+        filters.push(`t.tx_hash ILIKE $${paramIndex++}`);
+        values.push(`%${params.hash}%`);
+      }
+
+
+
       const queryBase = `
       FROM public.transactions t
       JOIN UNNEST($1::text[]) AS p(pattern)
         ON REPLACE(LOWER(t.from_address), '0x', '') ILIKE REPLACE(p.pattern, '0x', '')
         OR REPLACE(LOWER(t.to_address), '0x', '') ILIKE REPLACE(p.pattern, '0x', '')
       WHERE LOWER(t.type) IN ('blockchain', 'bridge')
+      ${filters.length ? `AND ${filters.join(" AND ")}` : ""}
     `;
 
-      const { rows: countRows } = await clientAdmin.query<{ total: number }>(
-        `SELECT COUNT(*)::int AS total ${queryBase}`,
-        [walletPatterns]
-      );
+       const { rows: countRows } = await clientAdmin.query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total ${queryBase}`,
+      values
+    );
+    const total = countRows[0]?.total ?? 0;
 
-      const total = countRows[0]?.total ?? 0;
-
-      const { rows: data } = await clientAdmin.query<UserTransaction>(
-        `
+    // 5. Dados paginados
+    values.push(limit, offset);
+    const { rows: data } = await clientAdmin.query<UserTransaction>(
+      `
       SELECT 
         t.id,
         t.uuid,
@@ -680,22 +714,15 @@ export class PgBanksTransactionsRepository
         t.updated_at
       ${queryBase}
       ORDER BY t.${sortBy} ${sortOrder}
-      LIMIT $2 OFFSET $3
+      LIMIT $${paramIndex++} OFFSET $${paramIndex}
       `,
-        [walletPatterns, limit, offset]
-      );
+      values
+    );
 
-      return {
-        data,
-        total,
-        page,
-        limit,
-      };
-    } catch (err) {
-      throw err;
-    } finally {
-      clientBanks.release();
-      clientAdmin.release();
-    }
+    return { data, total, page, limit };
+  } finally {
+    clientBanks.release();
+    clientAdmin.release();
   }
+}
 }
