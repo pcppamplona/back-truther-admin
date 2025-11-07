@@ -1,8 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { makeListAllUserTransactionsUseCase } from "@/application/factories/transactions/make-list-all-user-transactions";
-import { PaginationParams } from "@/shared/pagination";
 import { UserTransactionsParams } from "@/domain/transactions/model/pix-pagination-params";
-
 
 export async function listAllUserTransactionsController(req: FastifyRequest, reply: FastifyReply) {
   const { document } = req.params as { document: string };
@@ -22,7 +20,6 @@ export async function listAllUserTransactionsController(req: FastifyRequest, rep
   if (!document) {
     return reply.status(400).send({ error: "document is required" });
   }
-
   try {
     const useCase = makeListAllUserTransactionsUseCase();
 
