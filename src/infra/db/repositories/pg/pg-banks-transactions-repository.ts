@@ -748,7 +748,7 @@ export class PgBanksTransactionsRepository
     const offset = (page - 1) * limit;
 
     const allowedSortBy = new Set<string>([
-      "ob.id",
+      "atm.id",
       "ob.txid",
       'ob."sender"',
       'atm."receiverName"',
@@ -764,6 +764,7 @@ export class PgBanksTransactionsRepository
 
     const where: string[] = [];
     const values: unknown[] = [];
+
     const pushWhere = (clause: string, value?: unknown) => {
       if (value === undefined || value === null || value === "") return;
       values.push(value);
@@ -802,20 +803,26 @@ export class PgBanksTransactionsRepository
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
 
+   
     const select = `
-    SELECT
-      ob.id,
-      ob.txid,
-      ob."sender",
-      ob.status AS status_bk,
-      atm."receiverName",
-      atm."receiverDocument",
-      atm."amount" AS amount_brl,
-      atm."status" AS status_px,
-      atm."createdAt"::text AS createdAt
-    FROM "orderBuy" AS ob
-    LEFT JOIN "atmCashout" AS atm ON atm."orderId" = ob."id"
-  `;
+      SELECT
+        atm.id,
+        ob.txid,
+        ob."refundTxid",
+        ob."block",
+        ob."sender",
+        ob."receiver",
+        ob."amount" AS amount_crypto,
+        ob.status AS status_bk,
+        atm."receiverName",
+        atm."receiverDocument",
+        atm."amount" AS amount_brl,
+        atm."status" AS status_px,
+        atm."createdAt"::text AS createdAt
+      FROM "atmCashout" AS atm
+      LEFT JOIN "orderBuy" AS ob ON ob."id" = atm."orderId"
+    `;
+
 
     const query = `
     ${select}
@@ -827,8 +834,8 @@ export class PgBanksTransactionsRepository
 
     const countQuery = `
     SELECT COUNT(*)::int AS total
-    FROM "orderBuy" AS ob
-    LEFT JOIN "atmCashout" AS atm ON atm."orderId" = ob."id"
+    FROM "atmCashout" AS atm
+    LEFT JOIN "orderBuy" AS ob ON ob."id" = atm."orderId"
     ${whereClause}
   `;
 
@@ -837,6 +844,7 @@ export class PgBanksTransactionsRepository
     try {
       const result = await client.query(query, [...values, limit, offset]);
       const count = await client.query(countQuery, values);
+
       return {
         data: result.rows as AtmTransaction[],
         total: Number(count.rows[0]?.total ?? 0),
@@ -847,4 +855,5 @@ export class PgBanksTransactionsRepository
       client.release();
     }
   }
+  
 }
