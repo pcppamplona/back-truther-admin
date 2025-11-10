@@ -15,6 +15,7 @@ import {
 import { listBilletCashoutPaginatedController } from "../../controllers/transactions/list-billet-cashout-controller";
 import { listBridgePaginatedController } from "../../controllers/transactions/list-bridge-controller";
 import { listAllUserTransactionsController } from "../../controllers/transactions/list-all-user-transactions-controller";
+import { listAtmPaginatedController } from "../../controllers/transactions/list-atm-controller";
 
 export async function transactionsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -80,7 +81,8 @@ export async function transactionsRoutes(app: FastifyInstance) {
     },
     listBridgePaginatedController
   ),
-    app.withTypeProvider<ZodTypeProvider>().get(
+  
+  app.withTypeProvider<ZodTypeProvider>().get(
       "/transactions/by-document/:document",
       {
         preHandler: [verifyJwt()],
@@ -91,4 +93,17 @@ export async function transactionsRoutes(app: FastifyInstance) {
       },
       listAllUserTransactionsController
     );
+
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/transactions/atm",
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ["Transactions"],
+        summary:
+          "List Atm cashout transactions with filters (requires authentication)",
+      },
+    },
+    listAtmPaginatedController
+  );
 }
