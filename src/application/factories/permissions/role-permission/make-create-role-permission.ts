@@ -1,4 +1,4 @@
-import { CreateRolePermissionUseCase } from "@/application/use-cases/permissions/create-role-permission"
+import { CreateRolePermissionUseCase } from "@/application/use-cases/permissions/role-permission/create-role-permission"
 import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions-repository"
 import { PoolClient } from "pg"
 

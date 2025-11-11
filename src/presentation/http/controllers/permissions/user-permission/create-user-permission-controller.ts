@@ -1,4 +1,4 @@
-import { makeCreateUserPermissionsUseCase } from '@/application/factories/permissions/make-create-user-permission'
+import { makeCreateUserPermissionsUseCase } from '@/application/factories/permissions/user-permission/make-create-user-permission'
 import { FastifyRequest, FastifyReply } from 'fastify'
 
 interface CreateUserPermissionBody {

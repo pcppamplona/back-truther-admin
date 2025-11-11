@@ -1,12 +1,15 @@
 import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { verifyJwt } from '@/presentation/http/middlewares/verify-jwt'
-import { getRolePermissionsController } from '../../controllers/permissions/get-role-permissions-controller'
-import { createRolePermissionController } from '../../controllers/permissions/create-role-permission-controller'
-import { getUserPermissionsController } from '../../controllers/permissions/get-user-permissions-controller'
-import { createUserPermissionController } from '../../controllers/permissions/create-user-permission-controller'
+import { getRolePermissionController } from '../../controllers/permissions/role-permission/get-role-permission-controller'
+import { createRolePermissionController } from '../../controllers/permissions/role-permission/create-role-permission-controller'
+import { deleteRolePermissionController } from '../../controllers/permissions/role-permission/delete-role-permission-controller'
+import { getUserPermissionsController } from '../../controllers/permissions/user-permission/get-user-permissions-controller'
+import { createUserPermissionController } from '../../controllers/permissions/user-permission/create-user-permission-controller'
+import { deleteUserPermissionController } from '../../controllers/permissions/user-permission/delete-user-permission-controller'
 
 export async function permissionsRoutes(app: FastifyInstance) {
+  ////////////////////////////// ROLE PERMISSIONS
   app.withTypeProvider<ZodTypeProvider>().get(
     '/permissions/roles/:role_id',
     {
@@ -16,7 +19,7 @@ export async function permissionsRoutes(app: FastifyInstance) {
         summary: 'Get all permissions of a role',
       },
     },
-    getRolePermissionsController
+    getRolePermissionController
   )
 
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -31,6 +34,21 @@ export async function permissionsRoutes(app: FastifyInstance) {
     createRolePermissionController
   )
 
+  app.withTypeProvider<ZodTypeProvider>().delete(
+    '/permissions/roles/:role_id/:permission_id',
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ['Permissions'],
+        summary: 'Remove permission from role',
+      },
+    },
+    deleteRolePermissionController
+  )
+
+
+
+  ////////////////////////////// USERS PERMISSIONS
   app.withTypeProvider<ZodTypeProvider>().get(
     '/permissions/users/:user_id',
     {
@@ -54,4 +72,17 @@ export async function permissionsRoutes(app: FastifyInstance) {
     },
     createUserPermissionController
   )
+
+  app.withTypeProvider<ZodTypeProvider>().delete(
+    '/permissions/users/:user_id/:permission_id',
+    {
+      preHandler: [verifyJwt()],
+      schema: {
+        tags: ['Permissions'],
+        summary: 'Remove permission from user',
+      },
+    },
+    deleteUserPermissionController
+  )
+
 }

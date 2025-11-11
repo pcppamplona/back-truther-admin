@@ -1,4 +1,4 @@
-import { CreateUserPermissionUseCase } from "@/application/use-cases/permissions/create-user-permission"
+import { CreateUserPermissionUseCase } from "@/application/use-cases/permissions/user-permission/create-user-permission"
 import { PgUserPermissionsRepository } from "@/infra/db/repositories/pg/pg-user-permissions-repository"
 import { PoolClient } from "pg"
 

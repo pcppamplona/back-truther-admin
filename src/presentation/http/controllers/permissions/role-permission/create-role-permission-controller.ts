@@ -1,4 +1,4 @@
-import { makeCreateRolePermissionUseCase } from "@/application/factories/permissions/make-create-role-permission";
+import { makeCreateRolePermissionUseCase } from "@/application/factories/permissions/role-permission/make-create-role-permission";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function createRolePermissionController(

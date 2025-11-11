@@ -40,18 +40,38 @@ export class PgRolePermissionsRepository implements RolePermissionsRepository {
     }
   }
 
-  async findDetailsByRoleId(roleId: number): Promise<{ key_name: string; description: string | null }[]> {
+  async findDetailsByRoleId(
+    roleId: number
+  ): Promise<{ id: number; key_name: string; description: string | null }[]> {
     const client = await this.getClient()
     try {
       const result = await client.query(
-        `SELECT p.key_name, p.description
-         FROM role_permissions rp
-         JOIN permissions p ON p.id = rp.permission_id
-         WHERE rp.role_id = $1
-         ORDER BY p.key_name`,
+        `SELECT p.id, p.key_name, p.description
+        FROM role_permissions rp
+        JOIN permissions p ON p.id = rp.permission_id
+        WHERE rp.role_id = $1
+        ORDER BY p.id`,
         [roleId]
       )
-      return result.rows.map(r => ({ key_name: r.key_name, description: r.description }))
+
+      return result.rows.map(r => ({
+        id: r.id,
+        key_name: r.key_name,
+        description: r.description,
+      }))
+    } finally {
+      client.release()
+    }
+  }
+
+
+  async delete(roleId: number, permissionId: number): Promise<void> {
+    const client = await this.getClient()
+    try {
+      await client.query(
+        `DELETE FROM role_permissions WHERE role_id = $1 AND permission_id = $2`,
+        [roleId, permissionId]
+      )
     } finally {
       client.release()
     }
