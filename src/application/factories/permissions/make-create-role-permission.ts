@@ -1,5 +1,5 @@
 import { CreateRolePermissionUseCase } from "@/application/use-cases/permissions/create-role-permission"
-import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions.repository"
+import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions-repository"
 import { PoolClient } from "pg"
 
 export function makeCreateRolePermissionUseCase(client?: PoolClient) {
