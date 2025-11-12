@@ -6,6 +6,7 @@ import { listAuditLogsPaginatedController } from "../../controllers/audit-logs/l
 import { verifyJwt } from "../../middlewares/verify-jwt";
 import { getAuditLogTicketController } from "../../controllers/audit-logs/get-audit-log-ticket-controller";
 import { checkPermission } from "../../middlewares/check-permission";
+import { getPaginatedAuditLogsByUserIdController } from "../../controllers/audit-logs/get-paginated-audit-logs-by-user-id-controller";
 
 export async function auditLogsRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -14,43 +15,55 @@ export async function auditLogsRoutes(app: FastifyInstance) {
       preHandler: [verifyJwt(), checkPermission("audit-logs:read")],
       schema: {
         tags: ["Logs de Auditoria"],
-        summary: "Listar logs de auditoria com paginação e filtros (requer autenticação)",
+        summary:
+          "Listar logs de auditoria com paginação e filtros (requer autenticação)",
       },
     },
     listAuditLogsPaginatedController
   ),
-  app.withTypeProvider<ZodTypeProvider>().get(
-    "/audit-logs/:id",
-    {
-      preHandler: [verifyJwt()],
-      schema: {
-        tags: ["Logs de Auditoria"],
-        summary: "Obter log de auditoria por ID (requer autenticação)",
+    app.withTypeProvider<ZodTypeProvider>().get(
+      "/audit-logs/:id",
+      {
+        preHandler: [verifyJwt()],
+        schema: {
+          tags: ["Logs de Auditoria"],
+          summary: "Obter log de auditoria por ID (requer autenticação)",
+        },
       },
-    },
-    getAuditLogByIdController
-  ),
-  app.withTypeProvider<ZodTypeProvider>().post(
-    "/audit-logs",
-    {
-      preHandler: [verifyJwt()],
-      schema: {
-        tags: ["Logs de Auditoria"],
-        summary: "Criar um novo log de auditoria (requer autenticação)",
+      getAuditLogByIdController
+    ),
+    app.withTypeProvider<ZodTypeProvider>().post(
+      "/audit-logs",
+      {
+        preHandler: [verifyJwt()],
+        schema: {
+          tags: ["Logs de Auditoria"],
+          summary: "Criar um novo log de auditoria (requer autenticação)",
+        },
       },
-    },
-    createAuditLogController
-  ),
-
-  app.withTypeProvider<ZodTypeProvider>().get(
-    "/audit-logs/ticket/:ticket_id",
-    {
-      preHandler: [verifyJwt()],
-      schema: {
-        tags: ["Logs de Auditoria"],
-        summary: "Obter log de auditoria de um ticket por ID (requer autenticação)",
+      createAuditLogController
+    ),
+    app.withTypeProvider<ZodTypeProvider>().get(
+      "/audit-logs/ticket/:ticket_id",
+      {
+        preHandler: [verifyJwt()],
+        schema: {
+          tags: ["Logs de Auditoria"],
+          summary:
+            "Obter log de auditoria de um ticket por ID (requer autenticação)",
+        },
       },
-    },
-    getAuditLogTicketController
-  );
+      getAuditLogTicketController
+    ),
+    app.withTypeProvider<ZodTypeProvider>().get(
+      "/audit-logs/user/:user_id",
+      {
+        schema: {
+          tags: ["Logs de Auditoria"],
+          summary:
+            "Listar logs de auditoria por usuário (paginado e filtrável)",
+        },
+      },
+      getPaginatedAuditLogsByUserIdController
+    );
 }

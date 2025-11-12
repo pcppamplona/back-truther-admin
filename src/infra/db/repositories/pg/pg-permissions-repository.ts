@@ -1,17 +1,39 @@
-import { PoolClient } from 'pg'
-import { PostgresDatabase } from '../../pg/connection'
-import { PermissionsRepository } from '@/domain/permissions/repositories/permissions-repository'
+import { PoolClient } from "pg";
+import { PostgresDatabase } from "../../pg/connection";
+import { PermissionsRepository } from "@/domain/permissions/repositories/permissions-repository";
 
 export class PgPermissionsRepository implements PermissionsRepository {
   constructor(private client?: PoolClient) {}
 
   private async getClient(): Promise<PoolClient> {
-    if (this.client) return this.client
-    return PostgresDatabase.getClient()
+    if (this.client) return this.client;
+    return PostgresDatabase.getClient();
+  }
+
+  async findAll(): Promise<
+    { id: string; key_name: string; description: string }[]
+  > {
+    const client = await this.getClient();
+
+    try {
+      const result = await client.query(`
+      SELECT id, key_name, description
+      FROM permissions
+      ORDER BY id ASC
+    `);
+
+      return result.rows.map((row) => ({
+        id: row.id,
+        key_name: row.key_name,
+        description: row.description,
+      }));
+    } finally {
+      client.release();
+    }
   }
 
   async findAllByUserId(userId: number): Promise<string[]> {
-    const client = await this.getClient()
+    const client = await this.getClient();
     try {
       const result = await client.query(
         `
@@ -32,10 +54,10 @@ export class PgPermissionsRepository implements PermissionsRepository {
         ORDER BY key_name
         `,
         [userId]
-      )
-      return result.rows.map(r => r.key_name as string)
+      );
+      return result.rows.map((r) => r.key_name as string);
     } finally {
-      client.release()
+      client.release();
     }
   }
 }

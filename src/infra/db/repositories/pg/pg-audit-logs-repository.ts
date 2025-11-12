@@ -382,4 +382,131 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       client.release();
     }
   }
+
+  async findPaginatedByUserId(
+    user_id: number,
+    params: AuditLogPaginationParams
+  ): Promise<PaginatedResult<AuditLog>> {
+    const {
+      page,
+      limit,
+      search,
+      sortBy = "created_at",
+      sortOrder = "DESC",
+      action,
+      method,
+      sender_type,
+      target_id,
+      target_type,
+      target_external_id,
+      created_after,
+      created_before,
+      description,
+    } = params;
+
+    const client = await PostgresDatabase.getClient();
+    const offset = (page - 1) * limit;
+
+    const allowedSortBy = [
+      "id",
+      "method",
+      "action",
+      "message",
+      "created_at",
+      "sender_type",
+      "sender_id",
+      "target_type",
+      "target_id",
+      "target_external_id",
+    ];
+
+    const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
+    const safeSortOrder = sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+    const where: string[] = [`sender_id = $1`];
+    const values: unknown[] = [String(user_id)];
+
+    if (search) {
+      values.push(`%${search}%`);
+      where.push(`(message ILIKE $${values.length} OR method ILIKE $${values.length})`);
+    }
+
+    if (description) {
+      values.push(`%${description}%`);
+      where.push(`description ILIKE $${values.length}`);
+    }
+
+    if (action) {
+      values.push(action);
+      where.push(`action = $${values.length}`);
+    }
+
+    if (method) {
+      values.push(method);
+      where.push(`method = $${values.length}`);
+    }
+
+    if (sender_type) {
+      values.push(sender_type);
+      where.push(`sender_type = $${values.length}`);
+    }
+
+    if (target_id) {
+      values.push(target_id);
+      where.push(`target_id = $${values.length}`);
+    }
+
+    if (target_type) {
+      values.push(target_type);
+      where.push(`target_type = $${values.length}`);
+    }
+
+    if (target_external_id) {
+      values.push(target_external_id);
+      where.push(`target_external_id = $${values.length}`);
+    }
+
+    if (created_after) {
+      values.push(created_after);
+      where.push(`created_at >= $${values.length}`);
+    }
+
+    if (created_before) {
+      values.push(created_before);
+      where.push(`created_at <= $${values.length}`);
+    }
+
+    const whereClause = `WHERE ${where.join(" AND ")}`;
+
+    try {
+      const query = `
+        SELECT * FROM audit_logs
+        ${whereClause}
+        ORDER BY ${safeSortBy} ${safeSortOrder}
+        LIMIT $${values.length + 1}
+        OFFSET $${values.length + 2}
+      `;
+
+      const countQuery = `
+        SELECT COUNT(*)::int AS total FROM audit_logs
+        ${whereClause}
+      `;
+
+      const result = await client.query(query, [...values, limit, offset]);
+      const countResult = await client.query(countQuery, values);
+
+      const auditLogs = AuditLogMapper.toAuditLogList(result.rows);
+      await this.enrichAuditLogs(client, auditLogs);
+
+      return {
+        data: auditLogs,
+        total: Number(countResult.rows[0].total),
+        page,
+        limit,
+      };
+    } finally {
+      client.release();
+    }
+  }
+
 }

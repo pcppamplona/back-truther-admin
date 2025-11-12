@@ -20,4 +20,5 @@ export interface AuditLogsRepository {
   findById(id: number): Promise<AuditLog | null>
   findPaginated(params: AuditLogPaginationParams): Promise<PaginatedResult<AuditLog>>
   findByTicketId(ticket_id: number): Promise<AuditLog[] | null>
+  findPaginatedByUserId(user_id: number, params: AuditLogPaginationParams): Promise<PaginatedResult<AuditLog>>;
 }
