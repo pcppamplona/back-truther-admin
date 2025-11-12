@@ -2,8 +2,8 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { makeAuthenticateUseCase } from "@/application/factories/make-authenticate-user";
 import { authenticateInputSchema } from "../schemas/authenticate.schema";
-import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions.repository";
-import { PgUserPermissionsRepository } from "@/infra/db/repositories/pg/pg-user-permissions.repository";
+import { PgRolePermissionsRepository } from "@/infra/db/repositories/pg/pg-role-permissions-repository";
+import { PgUserPermissionsRepository } from "@/infra/db/repositories/pg/pg-user-permissions-repository";
 
 export async function authenticateController(
   request: FastifyRequest,
