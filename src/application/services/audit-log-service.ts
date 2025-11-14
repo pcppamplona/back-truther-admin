@@ -1,5 +1,5 @@
 import { CreateAuditLogUseCase } from '../use-cases/audit-logs/create-audit-log'
-import { ActionType, SystemType } from '@/domain/audit-logs/model/audit-log'
+import { ActionType, SystemType, Severity } from '@/domain/audit-logs/model/audit-log'
 import { User } from '@/domain/user/model/user'
 
 export interface LogActionParams {
@@ -8,12 +8,12 @@ export interface LogActionParams {
   message: string
   description?: string
   senderType: SystemType
-  senderId: string,
+  senderId: string
   targetType: SystemType
   targetId: string
   target_name?: string
-  targetExternalId?: number
-  targetExternalId?: string
+  targetExternalId?: number | string
+  severity?: Severity
 }
 
 export class AuditLogService {
@@ -29,7 +29,8 @@ export class AuditLogService {
       senderId,
       targetType,
       targetId,
-      targetExternalId
+      targetExternalId,
+      severity,
     } = params
 
     return this.createAuditLogUseCase.execute({
@@ -41,7 +42,8 @@ export class AuditLogService {
       sender_id: senderId,
       target_type: targetType,
       target_id: targetId,
-      target_external_id: targetExternalId
+      target_external_id: targetExternalId,
+      severity,
     })
   }
 }

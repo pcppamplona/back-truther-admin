@@ -1,4 +1,4 @@
-import { AuditLog, ActionType, SystemType } from '@/domain/audit-logs/model/audit-log'
+import { AuditLog, ActionType, SystemType, Severity } from '@/domain/audit-logs/model/audit-log'
 
 export class AuditLogMapper {
   static toAuditLog(row: any): AuditLog | null {
@@ -19,7 +19,8 @@ export class AuditLogMapper {
       target_type: row.target_type as SystemType,
       target_id: row.target_id,
       target_name: row.target_name,
-      target_external_id: row.target_external_id
+      target_external_id: row.target_external_id,
+      severity: row.severity as Severity,
     }
   }
 

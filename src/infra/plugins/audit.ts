@@ -33,6 +33,7 @@ async function auditPlugin(fastify: FastifyInstance) {
           targetType: partial.targetType,
           targetId: partial.targetId ?? '',
           targetExternalId: partial.targetExternalId ?? undefined,
+          severity: partial.severity ?? 'low',
         })
       } catch (err) {
         this.log?.warn({ err }, 'audit_log_failed')

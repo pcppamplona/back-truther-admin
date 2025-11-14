@@ -1,5 +1,6 @@
-export type ActionType = 'security' | 'listing' | 'alter' | 'crm'
+export type ActionType = 'security' | 'listing' | 'alter' | 'crm' | 'export'
 export type SystemType = 'GUENO' | 'ADMIN' | 'USER_CLIENT' | 'USER' | 'CLIENT'
+export type Severity = 'low' | 'medium' | 'high'
 
 export interface AuditLog {
   id: number
@@ -15,4 +16,5 @@ export interface AuditLog {
   target_id: string
   target_name?: string
   target_external_id?: string
+  severity: Severity
 }
