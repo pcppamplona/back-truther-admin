@@ -38,8 +38,9 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
           sender_id,
           target_type,
           target_id,
-          target_external_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+          target_external_id,
+          severity
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
         [
           data.method,
           data.action,
@@ -50,6 +51,7 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
           data.target_type,
           data.target_id,
           data.target_external_id || null,
+          data.severity ?? 'low',
         ]
       );
       const [row] = result.rows;
@@ -268,7 +270,7 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
 
     if (search) {
       values.push(`%${search}%`)
-      where.push(`(message ILIKE $${values.length} OR method ILIKE $${values.length})`)
+      where.push(`(message ILIKE $${values.length} OR method ILIKE $${values.length} OR action::text ILIKE $${values.length})`)
     }
     
     if (description) {
