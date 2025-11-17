@@ -91,6 +91,7 @@ export class PgTicketRepository implements TicketsRepository {
       sortOrder = "DESC",
       onlyAssigned,
       assignedRole,
+      assignedRoles,
       userId,
       status,
     } = params;
@@ -114,14 +115,46 @@ export class PgTicketRepository implements TicketsRepository {
       );
     }
 
-    if (onlyAssigned && userId) {
-      values.push(userId);
-      where.push(`t.assigned_user = $${values.length}`);
+    // Visibility filter 
+    if (assignedRoles === null || assignedRoles === undefined) {
+        // CASE 1: ADMIN - No assignedRoles array means view all.
+        // The 'where' and 'values' arrays remain unchanged for visibility.
+    } else if (assignedRoles.length > 0) {
+        // CASE 2: N2, N3, etc. - Visibility based on the list of roles they can see.
+        
+        const pgArray = `{${assignedRoles.join(",")}}`;
+        values.push(pgArray);
+        const rolesIdx = values.length;
+
+        let roleFilter = `t.assigned_role = ANY($${rolesIdx}::int[])`;
+
+        if (userId && onlyAssigned) {
+            // N2/N3 only want to see tickets explicitly assigned to them 
+            // *within* their visibility roles.
+            values.push(userId);
+            const userIdx = values.length;
+            roleFilter = `(${roleFilter} AND t.assigned_user = $${userIdx})`;
+        }
+        where.push(roleFilter);
+        
+    } else if (userId) { 
+        // CASE 3: N1 - assignedRoles is [] (empty array) but userId exists. 
+        // N1 only sees tickets created OR assigned to him.
+        values.push(userId); 
+        const userIdx = values.length; 
+
+        if (onlyAssigned) {
+            // only tickets assigned to the user
+            where.push(`t.assigned_user = $${userIdx}`);
+        } else {
+            // tickets created by OR assigned to the user (use same param twice)
+            where.push(`(t.created_by = $${userIdx} OR t.assigned_user = $${userIdx})`);
+        }
     }
 
     if (assignedRole != null) {
-      values.push(Number(assignedRole));
-      where.push(`t.assigned_role = $${values.length}`);
+        values.push(Number(assignedRole));
+        where.push(`t.assigned_role = $${values.length}`);
     }
 
     if (status) {
@@ -130,6 +163,11 @@ export class PgTicketRepository implements TicketsRepository {
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    // add limit and offset
+    const limitIdx = values.length + 1;
+    const offsetIdx = values.length + 2;
+    values.push(limit, offset);
 
     try {
       const query = `
@@ -171,10 +209,10 @@ export class PgTicketRepository implements TicketsRepository {
         LEFT JOIN userinfo ui ON ui.user_id = c.id
         LEFT JOIN users au ON t.assigned_user = au.id
         LEFT JOIN roles r_au ON au.role_id = r_au.id
-        JOIN ticket_reasons tr ON t.reason_id = tr.id
+        LEFT JOIN ticket_reasons tr ON t.reason_id = tr.id
         ${whereClause}
         ORDER BY t.${safeSortBy} ${safeSortOrder}
-        LIMIT $${values.length + 1} OFFSET $${values.length + 2};
+        LIMIT $${limitIdx} OFFSET $${offsetIdx}
       `;
 
       const countQuery = `
@@ -186,8 +224,8 @@ export class PgTicketRepository implements TicketsRepository {
         ${whereClause};
       `;
 
-      const result = await client.query(query, [...values, limit, offset]);
-      const countResult = await client.query(countQuery, values);
+    const result = await client.query(query, values);
+    const countResult = await client.query(countQuery, values.slice(0, -2));
 
       return {
         data: result.rows as Ticket[],
