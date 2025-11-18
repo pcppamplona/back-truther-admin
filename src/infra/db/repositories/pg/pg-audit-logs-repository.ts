@@ -243,7 +243,8 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       target_external_id,
       created_after,
       created_before,
-      description
+      description,
+      severity,
     } = params;
 
     const client = await PostgresDatabase.getClient();
@@ -321,6 +322,11 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
     if (created_before) {
       values.push(created_before);
       where.push(`created_at <= $${values.length}`);
+    }
+
+    if (severity) {
+      values.push(severity);
+      where.push(`severity = $${values.length}`);
     }
 
     const whereClause = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
@@ -404,6 +410,7 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       created_after,
       created_before,
       description,
+      severity,
     } = params;
 
     const client = await PostgresDatabase.getClient();
@@ -420,6 +427,7 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
       "target_type",
       "target_id",
       "target_external_id",
+      "severity",
     ];
 
     const safeSortBy = allowedSortBy.includes(sortBy) ? sortBy : "created_at";
@@ -476,6 +484,11 @@ export class PgAuditLogsRepository implements AuditLogsRepository {
     if (created_before) {
       values.push(created_before);
       where.push(`created_at <= $${values.length}`);
+    }
+
+    if (severity) {
+      values.push(severity);
+      where.push(`severity = $${values.length}`);
     }
 
     const whereClause = `WHERE ${where.join(" AND ")}`;
