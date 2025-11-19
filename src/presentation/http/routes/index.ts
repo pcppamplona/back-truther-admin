@@ -12,7 +12,7 @@ import { meRoute } from "./users/me"
 import { ticketsRoutes } from './tickets/tickets'
 import { ticketReasonRoutes } from './ticket-reasons/ticket-reasons'
 import { transactionsRoutes } from './transactions/transactions'
-import { servicesRoutes } from './services/services'
+import { servicesRoutes } from './block-levels/block-levels'
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthCheck)

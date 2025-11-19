@@ -42,6 +42,7 @@ export async function servicesRoutes(app: FastifyInstance) {
         headers: { authorization: (req.headers.authorization as string) || '' },
       })
       const json = await res.json().catch(() => null)
+      console.log(json)
       return reply.status(res.status).send(json)
     }
   )
