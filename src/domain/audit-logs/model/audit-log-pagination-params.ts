@@ -11,4 +11,5 @@ export interface AuditLogPaginationParams extends PaginationParams {
   created_after?: string
   created_before?: string
   description?: string
+  severity?: string
 }
