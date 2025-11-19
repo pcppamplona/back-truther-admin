@@ -6,7 +6,12 @@ export interface PaginationParams {
   sortOrder?: "ASC" | "DESC";
 
   onlyAssigned?: boolean;
+  /**
+   * Support filtering by one single role id (legacy) or multiple role ids.
+   * Use `assignedRoles` when providing more than one id.
+   */
   assignedRole?: string;
+  assignedRoles?: number[];
   userId?: string | number;
   status?: string;
 }

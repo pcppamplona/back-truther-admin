@@ -1,4 +1,5 @@
 import { makeGetTicketsPaginatedUseCase } from "@/application/factories/tickets/make-get-tickets-paginated";
+import { RoleVisibilityService } from "@/application/services/role-visibility-service";
 import { FastifyRequest, FastifyReply } from "fastify";
 
 export async function GetTicketsPaginatedController(
@@ -11,12 +12,18 @@ export async function GetTicketsPaginatedController(
     search,
     sortBy,
     sortOrder,
-    onlyAssigned,
-    assignedRole,
+    assignedRole: assignedRoleQuery,
     status
   } = req.query as any;
 
   const userId = req.user.sub;
+  const userRoleId = req.user.role;
+
+  const visibilityService = new RoleVisibilityService();
+  const visibleRoles = await visibilityService.resolveVisibleRoleIds(userRoleId);
+  const resolvedAssignedRole = visibleRoles === null
+    ? null
+    : (visibleRoles.length > 0 ? visibleRoles : [userRoleId]);
 
   const useCase = makeGetTicketsPaginatedUseCase(req.pgClient);
 
@@ -26,8 +33,12 @@ export async function GetTicketsPaginatedController(
     search,
     sortBy,
     sortOrder,
-    onlyAssigned: onlyAssigned === "true",
-    assignedRole,
+    onlyAssigned: false,
+    assignedRole: assignedRoleQuery,
+    // 👇 usa o campo certo conforme a quantidade de roles
+    ...(Array.isArray(resolvedAssignedRole) && resolvedAssignedRole.length > 1
+      ? { assignedRoles: resolvedAssignedRole }
+      : { assignedRole: resolvedAssignedRole ? resolvedAssignedRole[0].toString() : undefined }),
     status,
     userId,
   });

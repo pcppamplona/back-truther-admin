@@ -9,6 +9,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   DATABASE_URL_TRUTHER: z.string(),
   DATABASE_URL_BANKS: z.string(),
+  SERVICE_PROXY_URL: z.string().optional(),
   PK_SECRET: z.string(),
   SWAGGER_USER: z.string(),
   SWAGGER_PASSWORD: z.string(),

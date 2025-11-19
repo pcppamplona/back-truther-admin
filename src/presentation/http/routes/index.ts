@@ -12,6 +12,7 @@ import { meRoute } from "./users/me"
 import { ticketsRoutes } from './tickets/tickets'
 import { ticketReasonRoutes } from './ticket-reasons/ticket-reasons'
 import { transactionsRoutes } from './transactions/transactions'
+import { servicesRoutes } from './block-levels/block-levels'
 import { walletRoutes } from './wallets/wallets'
 import { permissionsRoutes } from './permissions/permissions'
 
@@ -32,6 +33,7 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(ticketsRoutes)
   await app.register(ticketReasonRoutes)
   await app.register(transactionsRoutes)
+  await app.register(servicesRoutes)
 
   await app.register(walletRoutes)
 
