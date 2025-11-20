@@ -15,6 +15,7 @@ import { transactionsRoutes } from './transactions/transactions'
 import { servicesRoutes } from './block-levels/block-levels'
 import { walletRoutes } from './wallets/wallets'
 import { permissionsRoutes } from './permissions/permissions'
+import { kycRoutes } from './kyc/kyc'
 
 export async function registerRoutes(app: FastifyInstance) {
   await app.register(healthCheck)
@@ -34,6 +35,7 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(ticketReasonRoutes)
   await app.register(transactionsRoutes)
   await app.register(servicesRoutes)
+  await app.register(kycRoutes)
 
   await app.register(walletRoutes)
 

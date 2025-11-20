@@ -14,6 +14,8 @@ const envSchema = z.object({
   SWAGGER_USER: z.string(),
   SWAGGER_PASSWORD: z.string(),
   SERVICE_LOG_NAME: z.string(),
+  EXTERNAL_USERNAME: z.string(),
+  EXTERNAL_PASSWORD: z.string(),
 })
 
 const _env = envSchema.safeParse(process.env)

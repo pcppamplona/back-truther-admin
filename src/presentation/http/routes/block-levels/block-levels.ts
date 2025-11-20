@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { verifyJwt } from '../../middlewares/verify-jwt'
 import { env } from '@/infra/env'
+import { externalAuthHook } from '../../middlewares/external-auth'
 
 const proxyBase = env.SERVICE_PROXY_URL || process.env.SERVICE_PROXY_URL
 
@@ -19,8 +20,8 @@ export async function servicesRoutes(app: FastifyInstance) {
     },
     async (req, reply) => {
       if (!proxyBase) return reply.status(500).send({ error: 'SERVICE_PROXY_URL not configured' })
-      const res = await fetch(`${proxyBase}/services/get-services`, {
-        headers: { authorization: (req.headers.authorization as string) || '' },
+      const res = await fetch(`${proxyBase}/${basePath}/get-services`, {
+        headers: { authorization: `Bearer ${(req as any).externalToken}` },
       })
       const json = await res.json().catch(() => null)
       return reply.status(res.status).send(json)
@@ -38,8 +39,8 @@ export async function servicesRoutes(app: FastifyInstance) {
     },
     async (req, reply) => {
       if (!proxyBase) return reply.status(500).send({ error: 'SERVICE_PROXY_URL not configured' })
-      const res = await fetch(`${proxyBase}/services/block-levels`, {
-        headers: { authorization: (req.headers.authorization as string) || '' },
+      const res = await fetch(`${proxyBase}/${basePath}/block-levels`, {
+        headers: { authorization: `Bearer ${(req as any).externalToken}` },
       })
       const json = await res.json().catch(() => null)
       console.log(json)
@@ -58,7 +59,7 @@ export async function servicesRoutes(app: FastifyInstance) {
     async (req, reply) => {
       if (!proxyBase) return reply.status(500).send({ error: 'SERVICE_PROXY_URL not configured' })
       const { user_id, tag } = req.params as any
-      const res = await fetch(`${proxyBase}/services/block-levels/users/${user_id}/tag/${tag}`, {
+      const res = await fetch(`${proxyBase}/${basePath}/block-levels/users/${user_id}/tag/${tag}`, {
         method: 'PUT',
         headers: {
           authorization: (req.headers.authorization as string) || '',
@@ -83,9 +84,9 @@ export async function servicesRoutes(app: FastifyInstance) {
     async (req, reply) => {
       if (!proxyBase) return reply.status(500).send({ error: 'SERVICE_PROXY_URL not configured' })
       const { user_id } = req.params as any
-      const res = await fetch(`${proxyBase}/services/block-levels/users/${user_id}`, {
+      const res = await fetch(`${proxyBase}/${basePath}/block-levels/users/${user_id}`, {
         method: 'DELETE',
-        headers: { authorization: (req.headers.authorization as string) || '' },
+        headers: { authorization: `Bearer ${(req as any).externalToken}` },
       })
       const json = await res.json().catch(() => null)
       return reply.status(res.status).send(json)
